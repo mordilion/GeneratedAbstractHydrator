@@ -1,0 +1,20 @@
+{
+    "name": "mordilion/generated-abstract-hydrator",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Henning Huncke",
+            "email": "mordilion@gmx.de"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Mordilion\\GeneratedAbstractHydrator\\": "src/Mordilion/GeneratedAbstractHydrator"
+        }
+    },
+    "require": {
+        "php": "^7.3",
+        "ocramius/generated-hydrator": "3.0"
+    }
+}
