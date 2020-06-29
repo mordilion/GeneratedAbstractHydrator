@@ -1,5 +1,7 @@
 {
     "name": "mordilion/generated-abstract-hydrator",
+    "description": "Extension-Library for Ocramius/GeneratedHydrator to use AbstractHydrator for the strategy functionality and recursive hydration",
+    "keywords": ["generated hydrator", "recursive hydration"],
     "type": "library",
     "license": "MIT",
     "authors": [
