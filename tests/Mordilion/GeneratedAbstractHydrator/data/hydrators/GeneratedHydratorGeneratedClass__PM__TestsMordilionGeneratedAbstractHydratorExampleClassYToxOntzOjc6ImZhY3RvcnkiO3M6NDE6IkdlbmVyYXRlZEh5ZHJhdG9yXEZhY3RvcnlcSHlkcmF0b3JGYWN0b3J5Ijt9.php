@@ -2,7 +2,7 @@
 
 namespace GeneratedHydratorGeneratedClass\__PM__\Tests\Mordilion\GeneratedAbstractHydrator\ExampleClass;
 
-class YToxOntzOjc6ImZhY3RvcnkiO3M6NDE6IkdlbmVyYXRlZEh5ZHJhdG9yXEZhY3RvcnlcSHlkcmF0b3JGYWN0b3J5Ijt9 extends \Mordilion\GeneratedAbstractHydrator\AbstractHydrator
+class YToxOntzOjc6ImZhY3RvcnkiO3M6NDE6IkdlbmVyYXRlZEh5ZHJhdG9yXEZhY3RvcnlcSHlkcmF0b3JGYWN0b3J5Ijt9 extends \Zend\Hydrator\AbstractHydrator
 {
     private $hydrateCallbacks = array(), $extractCallbacks = array();
     function __construct()
