@@ -32,8 +32,8 @@ class AbstractHydratorGenerator implements HydratorGenerator
     public function generate(ReflectionClass $originalClass): array
     {
         $ast = [new Class_($originalClass->getShortName())];
-
         $namespace = $originalClass->getNamespaceName();
+
         if ($namespace) {
             $ast = [new Namespace_(new Name(explode('\\', $namespace)), $ast)];
         }

@@ -33,10 +33,14 @@ use function var_export;
  */
 class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
 {
-    /** @var string[] */
+    /**
+     * @var string[]
+     */
     private $visiblePropertyMap = [];
 
-    /** @var string[][] */
+    /**
+     * @var string[][]
+     */
     private $hiddenPropertyMap = [];
 
     public function __construct(ReflectionClass $reflectedClass)
@@ -115,7 +119,7 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
     private function appendExtractClosureParts(array &$parts, array $propertyNames): void
     {
         foreach ($propertyNames as $propertyName) {
-            $bodyParts[] = "    \$values['" . $propertyName . "'] = \$that->extractValue('" . $propertyName . "', \$object->" . $propertyName . ', $object);';
+            $parts[] = "    \$values['" . $propertyName . "'] = \$that->extractValue('" . $propertyName . "', \$object->" . $propertyName . ', $object);';
         }
     }
 
