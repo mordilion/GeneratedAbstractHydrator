@@ -24,7 +24,7 @@ use Zend\Hydrator\AbstractHydrator;
 /**
  * @author Henning Huncke <mordilion@gmx.de>
  */
-final class GeneralTest extends TestCase
+final class GeneralAnnotationTest extends TestCase
 {
     public function testCommonHydrateCase(): void
     {
