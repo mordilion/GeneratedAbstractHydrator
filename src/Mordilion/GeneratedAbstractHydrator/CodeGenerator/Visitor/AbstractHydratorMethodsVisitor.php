@@ -159,6 +159,7 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
             $bodyParts[] = '    $object->' . $propertyName . " = \$this->hydrateValue('" . $propertyName . "', \$data['" . $propertyName . "'], \$object);";
             $bodyParts[] = '}';
         }
+
         $index = 0;
         foreach ($this->hiddenPropertyMap as $className => $propertyNames) {
             $bodyParts[] = '$this->hydrateCallbacks[' . ($index++) . ']->__invoke($object, $data, $this);';
@@ -176,10 +177,11 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         $method->params = [new Param(new Node\Expr\Variable('object'))];
 
         $bodyParts   = [];
-        $bodyParts[] = '$ret = array();';
+        $bodyParts[] = '$ret = [];';
         foreach ($this->visiblePropertyMap as $propertyName) {
             $bodyParts[] = "\$ret['" . $propertyName . "'] = \$this->extractValue('" . $propertyName . "', \$object->" . $propertyName . ', $object);';
         }
+
         $index = 0;
         foreach ($this->hiddenPropertyMap as $className => $propertyNames) {
             $bodyParts[] = '$this->extractCallbacks[' . ($index++) . ']->__invoke($object, $ret, $this);';

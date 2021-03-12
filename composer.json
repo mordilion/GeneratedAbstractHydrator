@@ -20,6 +20,7 @@
         "ocramius/generated-hydrator": "3.0"
     },
     "require-dev": {
-        "vimeo/psalm": "^4.6"
+        "vimeo/psalm": "^4.6",
+        "phpunit/phpunit": "^9.5"
     }
 }
