@@ -8,30 +8,39 @@ class YToxOntzOjc6ImZhY3RvcnkiO3M6NDE6IkdlbmVyYXRlZEh5ZHJhdG9yXEZhY3RvcnlcSHlkcm
     function __construct()
     {
         parent::__construct();
+        $this->setNamingStrategy(new \Zend\Hydrator\NamingStrategy\ArrayMapNamingStrategy(['publicIntegerProp' => 'public_integer_prop', 'privateStringProp' => 'private_string_prop']));
         $this->hydrateCallbacks[] = \Closure::bind(static function ($object, $values, $that) {
-            if (isset($values['private_string_prop']) || $object->privateStringProp !== null && \array_key_exists('private_string_prop', $values)) {
-                $object->privateStringProp = (string) $that->hydrateValue('privateStringProp', $values['private_string_prop'], $object);
+            $name = $that->extractName('privateStringProp', $object);
+            if (isset($values[$name]) || $object->privateStringProp !== null && \array_key_exists($name, $values)) {
+                $object->privateStringProp = (string) $that->hydrateValue('privateStringProp', $values[$name], $object);
             }
-            if (isset($values['privateIntegerProp']) || $object->privateIntegerProp !== null && \array_key_exists('privateIntegerProp', $values)) {
-                $object->privateIntegerProp = (int) $that->hydrateValue('privateIntegerProp', $values['privateIntegerProp'], $object);
+            $name = $that->extractName('privateIntegerProp', $object);
+            if (isset($values[$name]) || $object->privateIntegerProp !== null && \array_key_exists($name, $values)) {
+                $object->privateIntegerProp = (int) $that->hydrateValue('privateIntegerProp', $values[$name], $object);
             }
-            if (isset($values['nested']) || $object->nested !== null && \array_key_exists('nested', $values)) {
-                $object->nested = $that->hydrateValue('nested', $values['nested'], $object);
+            $name = $that->extractName('nested', $object);
+            if (isset($values[$name]) || $object->nested !== null && \array_key_exists($name, $values)) {
+                $object->nested = $that->hydrateValue('nested', $values[$name], $object);
             }
         }, null, 'Tests\\Mordilion\\GeneratedAbstractHydrator\\ExampleClass');
         $this->extractCallbacks[] = \Closure::bind(static function ($object, &$values, $that) {
-            $values['private_string_prop'] = (string) $that->extractValue('privateStringProp', $object->privateStringProp, $object);
-            $values['privateIntegerProp'] = (int) $that->extractValue('privateIntegerProp', $object->privateIntegerProp, $object);
-            $values['nested'] = $that->extractValue('nested', $object->nested, $object);
+            $name = $that->extractName('privateStringProp', $object);
+            $values[$name] = (string) $that->extractValue('privateStringProp', $object->privateStringProp, $object);
+            $name = $that->extractName('privateIntegerProp', $object);
+            $values[$name] = (int) $that->extractValue('privateIntegerProp', $object->privateIntegerProp, $object);
+            $name = $that->extractName('nested', $object);
+            $values[$name] = $that->extractValue('nested', $object->nested, $object);
         }, null, 'Tests\\Mordilion\\GeneratedAbstractHydrator\\ExampleClass');
     }
     function hydrate(array $data, $object)
     {
-        if (isset($data['publicStringProp']) || $object->publicStringProp !== null && \array_key_exists('publicStringProp', $data)) {
-            $object->publicStringProp = (string) $this->hydrateValue('publicStringProp', $data['publicStringProp'], $object);
+        $name = $this->extractName('publicStringProp', $object);
+        if (isset($data[$name]) || $object->publicStringProp !== null && \array_key_exists($name, $data)) {
+            $object->publicStringProp = (string) $this->hydrateValue('publicStringProp', $data[$name], $object);
         }
-        if (isset($data['public_integer_prop']) || $object->publicIntegerProp !== null && \array_key_exists('public_integer_prop', $data)) {
-            $object->publicIntegerProp = (int) $this->hydrateValue('publicIntegerProp', $data['public_integer_prop'], $object);
+        $name = $this->extractName('publicIntegerProp', $object);
+        if (isset($data[$name]) || $object->publicIntegerProp !== null && \array_key_exists($name, $data)) {
+            $object->publicIntegerProp = (int) $this->hydrateValue('publicIntegerProp', $data[$name], $object);
         }
         $this->hydrateCallbacks[0]->__invoke($object, $data, $this);
         return $object;
@@ -39,8 +48,10 @@ class YToxOntzOjc6ImZhY3RvcnkiO3M6NDE6IkdlbmVyYXRlZEh5ZHJhdG9yXEZhY3RvcnlcSHlkcm
     function extract($object)
     {
         $ret = [];
-        $ret['publicStringProp'] = (string) $this->extractValue('publicStringProp', $object->publicStringProp, $object);
-        $ret['public_integer_prop'] = (int) $this->extractValue('publicIntegerProp', $object->publicIntegerProp, $object);
+        $name = $this->extractName('publicStringProp', $object);
+        $ret[$name] = (string) $this->extractValue('publicStringProp', $object->publicStringProp, $object);
+        $name = $this->extractName('publicIntegerProp', $object);
+        $ret[$name] = (int) $this->extractValue('publicIntegerProp', $object->publicIntegerProp, $object);
         $this->extractCallbacks[0]->__invoke($object, $ret, $this);
         return $ret;
     }

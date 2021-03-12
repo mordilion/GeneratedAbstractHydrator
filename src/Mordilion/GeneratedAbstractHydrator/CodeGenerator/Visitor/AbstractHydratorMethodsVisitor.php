@@ -14,7 +14,6 @@ declare(strict_types=1);
 namespace Mordilion\GeneratedAbstractHydrator\CodeGenerator\Visitor;
 
 use Doctrine\Common\Annotations\AnnotationReader;
-use Doctrine\Common\Annotations\Reader;
 use Mordilion\GeneratedAbstractHydrator\Annotation\SerializedName;
 use Mordilion\GeneratedAbstractHydrator\Annotation\Type;
 use PhpParser\Node;
@@ -28,6 +27,7 @@ use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use ReflectionClass;
 use ReflectionProperty;
+use Zend\Hydrator\NamingStrategy\ArrayMapNamingStrategy;
 use function array_merge;
 use function implode;
 use function var_export;
@@ -48,6 +48,11 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
     private $hiddenPropertyMap = [];
 
     /**
+     * @var string[]
+     */
+    private $nameMapping = [];
+
+    /**
      * @var AnnotationReader
      */
     private $annotationReader;
@@ -58,6 +63,11 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
 
         foreach ($this->findAllInstanceProperties($reflectedClass) as $property) {
             $className = $property->getDeclaringClass()->getName();
+            $serializedPropertyName = $this->getSerializedPropertyName($property);
+
+            if ($serializedPropertyName !== $property->getName()) {
+                $this->nameMapping[$property->getName()] = $serializedPropertyName;
+            }
 
             if ($property->isPrivate() || $property->isProtected()) {
                 $this->hiddenPropertyMap[$className][] = $property;
@@ -118,11 +128,11 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         foreach ($properties as $property) {
             $propertyName = $property->getName();
             $propertyTypecast = $this->getPropertyTypecast($property);
-            $serializedPropertyName = $this->getSerializedPropertyName($property);
 
-            $parts[] = "    if (isset(\$values['" . $serializedPropertyName . "']) || " .
-                '$object->' . $propertyName . " !== null && \\array_key_exists('" . $serializedPropertyName . "', \$values)) {";
-            $parts[] = '        $object->' . $propertyName . " = " . $propertyTypecast . "\$that->hydrateValue('" . $propertyName . "', \$values['" . $serializedPropertyName . "'], \$object);";
+            $parts[] = "    \$name = \$that->extractName('" . $propertyName . "', \$object);";
+            $parts[] = "    if (isset(\$values[\$name]) || " .
+                '$object->' . $propertyName . " !== null && \\array_key_exists(\$name, \$values)) {";
+            $parts[] = '        $object->' . $propertyName . " = " . $propertyTypecast . "\$that->hydrateValue('" . $propertyName . "', \$values[\$name], \$object);";
             $parts[] = '    }';
         }
     }
@@ -136,8 +146,9 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         foreach ($properties as $property) {
             $propertyName = $property->getName();
             $propertyTypecast = $this->getPropertyTypecast($property);
-            $serializedPropertyName = $this->getSerializedPropertyName($property);
-            $parts[] = "    \$values['" . $serializedPropertyName . "'] = " . $propertyTypecast . "\$that->extractValue('" . $propertyName . "', \$object->" . $propertyName . ', $object);';
+
+            $parts[] = "    \$name = \$that->extractName('" . $propertyName . "', \$object);";
+            $parts[] = "    \$values[\$name] = " . $propertyTypecast . "\$that->extractValue('" . $propertyName . "', \$object->" . $propertyName . ', $object);';
         }
     }
 
@@ -147,6 +158,12 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         $bodyParts = ['parent::__construct();'];
 
         foreach ($this->hiddenPropertyMap as $className => $properties) {
+            // Add ArrayMapNamingStrategy for SerializedName-Annotations
+            $mapping = array_map(static function ($value, $key) {
+                return sprintf("'%s' => '%s'", $key, $value);
+            }, $this->nameMapping, array_keys($this->nameMapping));
+            $bodyParts[] = '$this->setNamingStrategy(new \\' . ArrayMapNamingStrategy::class . '([' . implode(',', $mapping) . ']));';
+
             // Hydrate closures
             $bodyParts[] = '$this->hydrateCallbacks[] = \\Closure::bind(static function ($object, $values, $that) {';
             $this->appendHydrateClosureParts($bodyParts, $properties);
@@ -174,10 +191,11 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         foreach ($this->visiblePropertyMap as $property) {
             $propertyName = $property->getName();
             $propertyTypecast = $this->getPropertyTypecast($property);
-            $serializedPropertyName = $this->getSerializedPropertyName($property);
-            $bodyParts[] = "if (isset(\$data['" . $serializedPropertyName . "']) || " .
-                '$object->' . $propertyName . " !== null && \\array_key_exists('" . $serializedPropertyName . "', \$data)) {";
-            $bodyParts[] = '    $object->' . $propertyName . " = " . $propertyTypecast . "\$this->hydrateValue('" . $propertyName . "', \$data['" . $serializedPropertyName . "'], \$object);";
+
+            $bodyParts[] = "\$name = \$this->extractName('" . $propertyName . "', \$object);";
+            $bodyParts[] = "if (isset(\$data[\$name]) || " .
+                '$object->' . $propertyName . " !== null && \\array_key_exists(\$name, \$data)) {";
+            $bodyParts[] = '    $object->' . $propertyName . " = " . $propertyTypecast . "\$this->hydrateValue('" . $propertyName . "', \$data[\$name], \$object);";
             $bodyParts[] = '}';
         }
 
@@ -202,8 +220,9 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         foreach ($this->visiblePropertyMap as $property) {
             $propertyName = $property->getName();
             $propertyTypecast = $this->getPropertyTypecast($property);
-            $serializedPropertyName = $this->getSerializedPropertyName($property);
-            $bodyParts[] = "\$ret['" . $serializedPropertyName . "'] = " . $propertyTypecast . "\$this->extractValue('" . $propertyName . "', \$object->" . $propertyName . ', $object);';
+
+            $bodyParts[] = "\$name = \$this->extractName('" . $propertyName . "', \$object);";
+            $bodyParts[] = "\$ret[\$name] = " . $propertyTypecast . "\$this->extractValue('" . $propertyName . "', \$object->" . $propertyName . ', $object);';
         }
 
         $index = 0;
