@@ -1,6 +1,6 @@
 composer.phar
 composer.lock
-/analyze/
+/analyze
 /vendor/
 /.idea/
 
