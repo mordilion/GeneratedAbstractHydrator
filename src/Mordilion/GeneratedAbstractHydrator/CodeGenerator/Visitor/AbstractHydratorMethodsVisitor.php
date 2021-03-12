@@ -13,6 +13,10 @@ declare(strict_types=1);
 
 namespace Mordilion\GeneratedAbstractHydrator\CodeGenerator\Visitor;
 
+use Doctrine\Common\Annotations\AnnotationReader;
+use Doctrine\Common\Annotations\Reader;
+use Mordilion\GeneratedAbstractHydrator\Annotation\SerializedName;
+use Mordilion\GeneratedAbstractHydrator\Annotation\Type;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Param;
@@ -34,27 +38,34 @@ use function var_export;
 class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
 {
     /**
-     * @var string[]
+     * @var ReflectionProperty[]
      */
     private $visiblePropertyMap = [];
 
     /**
-     * @var string[][]
+     * @var ReflectionProperty[][]
      */
     private $hiddenPropertyMap = [];
 
+    /**
+     * @var AnnotationReader
+     */
+    private $annotationReader;
+
     public function __construct(ReflectionClass $reflectedClass)
     {
+        $this->annotationReader = new AnnotationReader();
+
         foreach ($this->findAllInstanceProperties($reflectedClass) as $property) {
             $className = $property->getDeclaringClass()->getName();
 
             if ($property->isPrivate() || $property->isProtected()) {
-                $this->hiddenPropertyMap[$className][] = $property->getName();
+                $this->hiddenPropertyMap[$className][] = $property;
 
                 continue;
             }
 
-            $this->visiblePropertyMap[] = $property->getName();
+            $this->visiblePropertyMap[] = $property;
         }
     }
 
@@ -100,26 +111,33 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
 
     /**
      * @param string[] $parts
-     * @param string[] $propertyNames
+     * @param ReflectionProperty[] $propertyNames
      */
-    private function appendHydrateClosureParts(array &$parts, array $propertyNames): void
+    private function appendHydrateClosureParts(array &$parts, array $properties): void
     {
-        foreach ($propertyNames as $propertyName) {
-            $parts[] = "    if (isset(\$values['" . $propertyName . "']) || " .
-                '$object->' . $propertyName . " !== null && \\array_key_exists('" . $propertyName . "', \$values)) {";
-            $parts[] = '        $object->' . $propertyName . " = \$that->hydrateValue('" . $propertyName . "', \$values['" . $propertyName . "'], \$object);";
+        foreach ($properties as $property) {
+            $propertyName = $property->getName();
+            $propertyTypecast = $this->getPropertyTypecast($property);
+            $serializedPropertyName = $this->getSerializedPropertyName($property);
+
+            $parts[] = "    if (isset(\$values['" . $serializedPropertyName . "']) || " .
+                '$object->' . $propertyName . " !== null && \\array_key_exists('" . $serializedPropertyName . "', \$values)) {";
+            $parts[] = '        $object->' . $propertyName . " = " . $propertyTypecast . "\$that->hydrateValue('" . $propertyName . "', \$values['" . $serializedPropertyName . "'], \$object);";
             $parts[] = '    }';
         }
     }
 
     /**
      * @param string[] $parts
-     * @param string[] $propertyNames
+     * @param ReflectionProperty[] $propertyNames
      */
-    private function appendExtractClosureParts(array &$parts, array $propertyNames): void
+    private function appendExtractClosureParts(array &$parts, array $properties): void
     {
-        foreach ($propertyNames as $propertyName) {
-            $parts[] = "    \$values['" . $propertyName . "'] = \$that->extractValue('" . $propertyName . "', \$object->" . $propertyName . ', $object);';
+        foreach ($properties as $property) {
+            $propertyName = $property->getName();
+            $propertyTypecast = $this->getPropertyTypecast($property);
+            $serializedPropertyName = $this->getSerializedPropertyName($property);
+            $parts[] = "    \$values['" . $serializedPropertyName . "'] = " . $propertyTypecast . "\$that->extractValue('" . $propertyName . "', \$object->" . $propertyName . ', $object);';
         }
     }
 
@@ -128,15 +146,15 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         $method->params = [];
         $bodyParts = ['parent::__construct();'];
 
-        foreach ($this->hiddenPropertyMap as $className => $propertyNames) {
+        foreach ($this->hiddenPropertyMap as $className => $properties) {
             // Hydrate closures
             $bodyParts[] = '$this->hydrateCallbacks[] = \\Closure::bind(static function ($object, $values, $that) {';
-            $this->appendHydrateClosureParts($bodyParts, $propertyNames);
+            $this->appendHydrateClosureParts($bodyParts, $properties);
             $bodyParts[] = '}, null, ' . var_export($className, true) . ');' . "\n";
 
             // Extract closures
             $bodyParts[] = '$this->extractCallbacks[] = \\Closure::bind(static function ($object, &$values, $that) {';
-            $this->appendExtractClosureParts($bodyParts, $propertyNames);
+            $this->appendExtractClosureParts($bodyParts, $properties);
             $bodyParts[] = '}, null, ' . var_export($className, true) . ');' . "\n";
         }
 
@@ -153,15 +171,18 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         ];
 
         $bodyParts = [];
-        foreach ($this->visiblePropertyMap as $propertyName) {
-            $bodyParts[] = "if (isset(\$data['" . $propertyName . "']) || " .
-                '$object->' . $propertyName . " !== null && \\array_key_exists('" . $propertyName . "', \$data)) {";
-            $bodyParts[] = '    $object->' . $propertyName . " = \$this->hydrateValue('" . $propertyName . "', \$data['" . $propertyName . "'], \$object);";
+        foreach ($this->visiblePropertyMap as $property) {
+            $propertyName = $property->getName();
+            $propertyTypecast = $this->getPropertyTypecast($property);
+            $serializedPropertyName = $this->getSerializedPropertyName($property);
+            $bodyParts[] = "if (isset(\$data['" . $serializedPropertyName . "']) || " .
+                '$object->' . $propertyName . " !== null && \\array_key_exists('" . $serializedPropertyName . "', \$data)) {";
+            $bodyParts[] = '    $object->' . $propertyName . " = " . $propertyTypecast . "\$this->hydrateValue('" . $propertyName . "', \$data['" . $serializedPropertyName . "'], \$object);";
             $bodyParts[] = '}';
         }
 
         $index = 0;
-        foreach ($this->hiddenPropertyMap as $className => $propertyNames) {
+        foreach ($this->hiddenPropertyMap as $className => $properties) {
             $bodyParts[] = '$this->hydrateCallbacks[' . ($index++) . ']->__invoke($object, $data, $this);';
         }
 
@@ -178,12 +199,15 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
 
         $bodyParts   = [];
         $bodyParts[] = '$ret = [];';
-        foreach ($this->visiblePropertyMap as $propertyName) {
-            $bodyParts[] = "\$ret['" . $propertyName . "'] = \$this->extractValue('" . $propertyName . "', \$object->" . $propertyName . ', $object);';
+        foreach ($this->visiblePropertyMap as $property) {
+            $propertyName = $property->getName();
+            $propertyTypecast = $this->getPropertyTypecast($property);
+            $serializedPropertyName = $this->getSerializedPropertyName($property);
+            $bodyParts[] = "\$ret['" . $serializedPropertyName . "'] = " . $propertyTypecast . "\$this->extractValue('" . $propertyName . "', \$object->" . $propertyName . ', $object);';
         }
 
         $index = 0;
-        foreach ($this->hiddenPropertyMap as $className => $propertyNames) {
+        foreach ($this->hiddenPropertyMap as $className => $properties) {
             $bodyParts[] = '$this->extractCallbacks[' . ($index++) . ']->__invoke($object, $ret, $this);';
         }
 
@@ -215,5 +239,42 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         }
 
         return $method;
+    }
+
+    private function getAnnotation(ReflectionProperty $property, string $class): ?object
+    {
+        $annotations = $this->annotationReader->getPropertyAnnotations($property);
+
+        foreach ($annotations as $annotation) {
+            if ($annotation instanceof $class) {
+                return $annotation;
+            }
+        }
+
+        return null;
+    }
+
+    private function getPropertyTypecast(ReflectionProperty $property): string
+    {
+        /** @var Type|null $annotation */
+        $annotation = $this->getAnnotation($property, Type::class);
+
+        if ($annotation === null || $annotation->getType() === Type::TYPE_UNKNOWN) {
+            return '';
+        }
+
+        return $annotation->getTypecast() . " ";
+    }
+
+    private function getSerializedPropertyName(ReflectionProperty $property): string
+    {
+        /** @var SerializedName|null $annotation */
+        $annotation = $this->getAnnotation($property, SerializedName::class);
+
+        if ($annotation === null) {
+            return $property->getName();
+        }
+
+        return $annotation->getName();
     }
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Mordilion\GeneratedAbstractHydrator\Strategy;
 
+use Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException;
 use Zend\Hydrator\HydratorInterface;
 use Zend\Hydrator\Strategy\StrategyInterface;
 
@@ -46,9 +47,10 @@ class RecursiveHydrationStrategy implements StrategyInterface
     /**
      * @param mixed $value
      *
-     * @return array|mixed
+     * @return array|array[]
+     * @throws InvalidArgumentException
      */
-    public function extract($value)
+    public function extract($value): array
     {
         if (!$this->isCollection) {
             return $this->extractObject($value);
@@ -70,7 +72,7 @@ class RecursiveHydrationStrategy implements StrategyInterface
     /**
      * @param mixed $value
      *
-     * @return mixed|object
+     * @return object|object[]
      */
     public function hydrate($value)
     {
@@ -94,12 +96,13 @@ class RecursiveHydrationStrategy implements StrategyInterface
     /**
      * @param mixed $value
      *
-     * @return array|mixed
+     * @return array
+     * @throws InvalidArgumentException
      */
-    private function extractObject($value)
+    private function extractObject($value): array
     {
         if (!$value instanceof $this->object) {
-            throw new \InvalidArgumentException('The $value is not an instance of "' . get_class($this->object) . '".');
+            throw new InvalidArgumentException('$value is not an instance of "' . get_class($this->object) . '".');
         }
 
         return $this->hydrator->extract($value);

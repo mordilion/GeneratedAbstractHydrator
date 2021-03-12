@@ -17,7 +17,8 @@
     },
     "require": {
         "php": "^7.3",
-        "ocramius/generated-hydrator": "3.0"
+        "ocramius/generated-hydrator": "3.0",
+        "doctrine/annotations": "^1.12"
     },
     "require-dev": {
         "vimeo/psalm": "^4.6",
