@@ -11,7 +11,7 @@
 
 declare(strict_types=1);
 
-namespace Tests\Mordilion\GeneratedAbstractHydrator;
+namespace Mordilion\GeneratedAbstractHydrator;
 
 use GeneratedHydrator\Configuration;
 use Mordilion\GeneratedAbstractHydrator\Annotation as GHA;
@@ -100,6 +100,12 @@ final class GeneralAnnotationTest extends TestCase
 final class ExampleClass
 {
     /**
+     * @GHA\Type("array<DateTime>")
+     * @var array
+     */
+    public $simpleCollection = [];
+
+    /**
      * @GHA\Type("string")
      * @var string
      */
@@ -126,7 +132,7 @@ final class ExampleClass
     private $privateIntegerProp;
 
     /**
-     * @GHA\Type("\Tests\Mordilion\GeneratedAbstractHydrator\NestedClass")
+     * @GHA\Type("Mordilion\GeneratedAbstractHydrator\NestedClass")
      * @var NestedClass|null
      */
     private $nested;

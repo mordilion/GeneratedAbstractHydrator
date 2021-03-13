@@ -13,6 +13,8 @@ declare(strict_types=1);
 
 namespace Mordilion\GeneratedAbstractHydrator\Annotation;
 
+use Hoa\Compiler\Llk\TreeNode;
+use Mordilion\GeneratedAbstractHydrator\Annotation\Type\Parser;
 use Mordilion\GeneratedAbstractHydrator\Exception\RuntimeException;
 
 /**
@@ -21,11 +23,8 @@ use Mordilion\GeneratedAbstractHydrator\Exception\RuntimeException;
  */
 final class Type
 {
-    public const TYPE_UNKNOWN = 'unknown';
-    public const TYPE_SIMPLE_TYPECAST = 'simple_typecast';
-    public const TYPE_SINGLE_OBJECT = 'single_object';
-    public const TYPE_SIMPLE_ARRAY = 'simple_array';
-    public const TYPE_OBJECT_ARRAY = 'object_array';
+    public const TYPE_SIMPLE = 'simple_type';
+    public const TYPE_COMPLEX = 'complex_type';
 
     /**
      * @Required
@@ -34,23 +33,9 @@ final class Type
     private $name;
 
     /**
-     * @var string
+     * @var array
      */
-    private $type;
-
-    /**
-     * @var string[]
-     */
-    private $simpleTypecasts = [
-        'array' => '(array)',
-        'bool' => '(bool)',
-        'boolean' => '(bool)',
-        'double' => '(float)',
-        'float' => '(float)',
-        'int' => '(int)',
-        'integer' => '(int)',
-        'string' => '(string)',
-    ];
+    private $parameters;
 
     /**
      * @param mixed[] $values
@@ -66,7 +51,29 @@ final class Type
         }
 
         $this->name = $value;
-        $this->type = $this->determineType($value);
+
+        $parser = new Parser();
+        $element = $parser->parse($value, 'type');
+        $this->parameters = $this->determineTypeParameters($element);
+    }
+
+    public function apply(string $string, ?array $parameters = null): string
+    {
+        if ($parameters === null) {
+            $parameters = [$this->parameters];
+        }
+
+        foreach ($parameters as $parameter) {
+            if ($parameter['type'] === 'simple') {
+                $string = $this->applySimpleType($string);
+            }
+
+            if ($parameter['type'] === 'complex') {
+                $string = $this->apply($string, $parameter['params'] ?? null);
+            }
+        }
+
+        return $string;
     }
 
     public function getName(): string
@@ -74,45 +81,111 @@ final class Type
         return $this->name;
     }
 
-    public function getType(): string
+    public function getParameters(): array
     {
-        return $this->type;
+        return $this->parameters;
     }
 
-    public function getTypecast(): string
+    private function applySimpleType(string $string): string
     {
-        return $this->simpleTypecasts[$this->name] ?? '';
-    }
+        $name = ($this->getParameters()['name'] ?? '');
+        $value = ($this->getParameters()['value'] ?? null);
 
-    public static function getClass(string $value): string
-    {
-        if (class_exists($value)) {
+        if ($name === 'array') {
+            return '(array) ' . $string;
+        }
+
+        if ($name === 'string') {
+            return '(string) ' . $string;
+        }
+
+        if (in_array($name, ['int', 'integer'], true)) {
+            return '(int) ' . $string;
+        }
+
+        if (in_array($name, ['bool', 'boolean'], true)) {
+            return '(bool) ' . $string;
+        }
+
+        if (in_array($name, ['double', 'float'], true)) {
+            return '(float) ' . $string;
+        }
+
+        if (is_string($value)) {
             return $value;
         }
 
-        return '';
+        return $string;
     }
 
-    private function determineType(string $value): string
+    private function determineTypeParameters(TreeNode $element): array
     {
-        if (isset($this->simpleTypecasts[$value])) {
-            return self::TYPE_SIMPLE_TYPECAST;
+        switch ($element->getId()) {
+            case '#' . self::TYPE_SIMPLE:
+                return $this->getSimpleTypeParameters($element);
+
+            case '#' . self::TYPE_COMPLEX:
+                return $this->getComplexTypeParameters($element);
         }
 
-        if (class_exists($value)) {
-            return self::TYPE_SINGLE_OBJECT;
+        return [];
+    }
+
+    private function getSimpleTypeParameters(TreeNode $element): array
+    {
+        $tokenNode = $element->getChild(0);
+
+        if ($tokenNode === null) {
+            return [];
         }
 
-        if (preg_match('/array<([^<>]+)>/', $value, $matches)) {
-            $value = $matches[1] ?? '';
+        $token = $tokenNode->getValueToken();
+        $value = $tokenNode->getValueValue();
 
-            if (class_exists($value)) {
-                return self::TYPE_OBJECT_ARRAY;
-            }
-
-            return self::TYPE_SIMPLE_ARRAY;
+        if ($token === 'name') {
+            return ['type' => 'simple', 'name' => $value];
         }
 
-        return self::TYPE_UNKNOWN;
+        if ($token === 'empty_string') {
+            return ['type' => 'simple', 'value' => ''];
+        }
+
+        if ($token === 'null') {
+            return ['type' => 'simple', 'value' => 'null'];
+        }
+
+        if ($token === 'number') {
+            return ['type' => 'simple', 'value' => $value];
+        }
+
+        $escapeChar = $token === 'quoted_string' ? '"' : "'";
+
+        if (strpos($value, $escapeChar) !== false) {
+            $value = str_replace($escapeChar . $escapeChar, $escapeChar, $value);
+        }
+
+        return ['type' => 'simple', 'value' => $value];
+    }
+
+    private function getComplexTypeParameters(TreeNode $element): array
+    {
+        $tokenNode = $element->getChild(0);
+
+        if ($tokenNode === null) {
+            return [];
+        }
+
+        $parameters = array_slice($element->getChildren(), 1);
+
+        return [
+            'type' => 'complex',
+            'name' => $tokenNode->getValueValue(),
+            'params' => array_map(
+                function (TreeNode $node) {
+                    return $this->determineTypeParameters($node);
+                },
+                $parameters
+            ),
+        ];
     }
 }
