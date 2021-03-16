@@ -59,6 +59,7 @@ final class GeneralAnnotationTest extends TestCase
 
         $nested = $object->nested;
         self::assertEquals($data['nested']['prop1'], $nested->prop1);
+        self::assertEquals(false, $nested->prop2);
         self::assertIsString($nested->prop1);
         self::assertIsBool($nested->prop2);
     }
@@ -110,7 +111,7 @@ final class GeneralAnnotationTest extends TestCase
 final class ExampleClass
 {
     /**
-     * @GHA\Type("array<DateTime>")
+     * @GHA\Type("array<DateTime('now')>")
      * @var array
      */
     public $simpleCollection = [];
