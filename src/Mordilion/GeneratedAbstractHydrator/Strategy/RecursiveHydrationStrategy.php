@@ -42,12 +42,11 @@ class RecursiveHydrationStrategy implements StrategyInterface
      */
     private $allowNull;
 
-    public function __construct(HydratorInterface $hydrator, object $object, bool $isCollection = false, bool $allowNull = true)
+    public function __construct(HydratorInterface $hydrator, object $object, bool $isCollection = false)
     {
         $this->hydrator = $hydrator;
         $this->object = $object;
         $this->isCollection = $isCollection;
-        $this->allowNull = $allowNull;
     }
 
     /**
@@ -58,6 +57,10 @@ class RecursiveHydrationStrategy implements StrategyInterface
      */
     public function extract($value): ?array
     {
+        if ($value === null) {
+            return $this->isCollection ? [] : $value;
+        }
+
         if (!$this->isCollection) {
             return $this->extractObject($value);
         }
@@ -78,10 +81,14 @@ class RecursiveHydrationStrategy implements StrategyInterface
     /**
      * @param mixed $value
      *
-     * @return object|object[]
+     * @return object|object[]|null
      */
     public function hydrate($value)
     {
+        if ($value === null) {
+            return $this->isCollection ? [] : $value;
+        }
+
         if (!$this->isCollection) {
             return $this->hydrateObject($value);
         }
@@ -107,12 +114,8 @@ class RecursiveHydrationStrategy implements StrategyInterface
      */
     private function extractObject($value): ?array
     {
-        if (!$value instanceof $this->object && !($this->allowNull && $value === null)) {
+        if (!$value instanceof $this->object) {
             throw new InvalidArgumentException('$value is not an instance of "' . get_class($this->object) . '".');
-        }
-
-        if ($value === null) {
-            return null;
         }
 
         return $this->hydrator->extract($value);
