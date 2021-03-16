@@ -18,7 +18,7 @@ use function is_string;
 
 /**
  * @Annotation
- * @Target({"PROPERTY", "METHOD", "ANNOTATION"})
+ * @Target({"PROPERTY", "ANNOTATION"})
  */
 final class SerializedName
 {

@@ -17,7 +17,7 @@ use Mordilion\GeneratedAbstractHydrator\Exception\RuntimeException;
 
 /**
  * @Annotation
- * @Target({"PROPERTY", "METHOD", "ANNOTATION"})
+ * @Target({"PROPERTY", "ANNOTATION"})
  */
 final class Type implements ParserAwareInterface
 {
