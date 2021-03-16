@@ -17,7 +17,7 @@ use Hoa\File\Read;
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$directory = __DIR__ . '/../src/Mordilion/GeneratedAbstractHydrator/Annotation/Type';
+$directory = __DIR__ . '/../src/Mordilion/GeneratedAbstractHydrator/Annotation';
 $compiler = Llk::load(new Read($directory . '/grammar.pp'));
 
 file_put_contents(
@@ -36,7 +36,7 @@ file_put_contents(
  
 declare(strict_types=1);
 
-namespace Mordilion\GeneratedAbstractHydrator\Annotation\Type;
+namespace Mordilion\GeneratedAbstractHydrator\Annotation;
 
 /**
  * @generated Use generate-parser.php to refresh this class.
