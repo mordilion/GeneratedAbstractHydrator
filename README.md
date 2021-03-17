@@ -1,6 +1,6 @@
 # GeneratedAbstractHydrator
 ## Installation
-`compsoer require mordilion/generated-abstract-hydrator`
+`composer require mordilion/generated-abstract-hydrator`
 
 ## Examples
 ### Simple
