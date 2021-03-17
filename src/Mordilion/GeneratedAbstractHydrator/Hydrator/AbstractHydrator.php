@@ -30,7 +30,14 @@ abstract class AbstractHydrator implements HydratorInterface, StrategyEnabledInt
     {
     }
 
-    protected function extractValue($name, $value, $object = null)
+    /**
+     * @param mixed       $name
+     * @param mixed       $value
+     * @param object|null $object
+     *
+     * @return mixed
+     */
+    public function extractValue($name, $value, $object = null)
     {
         if (!$this->hasStrategy($name) && $this->hasNamingStrategy()) {
             /** @var NamingStrategyInterface $namingStrategy */
@@ -47,7 +54,14 @@ abstract class AbstractHydrator implements HydratorInterface, StrategyEnabledInt
         return $value;
     }
 
-    protected function hydrateValue($name, $value, $data = null)
+    /**
+     * @param mixed       $name
+     * @param mixed       $value
+     * @param object|null $object
+     *
+     * @return mixed
+     */
+    public function hydrateValue($name, $value, $data = null)
     {
         if (!$this->hasStrategy($name) && $this->hasNamingStrategy()) {
             /** @var NamingStrategyInterface $namingStrategy */

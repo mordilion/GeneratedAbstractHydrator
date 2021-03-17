@@ -16,10 +16,10 @@ namespace Mordilion\GeneratedAbstractHydrator;
 use GeneratedHydrator\Configuration;
 use Mordilion\GeneratedAbstractHydrator\Annotation as GHA;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
+use Mordilion\GeneratedAbstractHydrator\Hydrator\AbstractHydrator;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use RuntimeException;
-use Zend\Hydrator\AbstractHydrator;
 
 /**
  * @author Henning Huncke <mordilion@gmx.de>

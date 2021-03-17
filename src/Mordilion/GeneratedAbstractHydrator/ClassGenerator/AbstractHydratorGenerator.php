@@ -22,7 +22,6 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeTraverser;
 use ReflectionClass;
-//use Zend\Hydrator\AbstractHydrator;
 use function explode;
 
 /**
