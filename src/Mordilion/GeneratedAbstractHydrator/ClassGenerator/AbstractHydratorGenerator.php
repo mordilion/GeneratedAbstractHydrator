@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Mordilion\GeneratedAbstractHydrator\ClassGenerator;
 
 use CodeGenerationUtils\Visitor\ClassExtensionVisitor;
+use Mordilion\GeneratedAbstractHydrator\Hydrator\AbstractHydrator;
 use Mordilion\GeneratedAbstractHydrator\CodeGenerator\Visitor\AbstractHydratorMethodsVisitor;
 use GeneratedHydrator\ClassGenerator\HydratorGenerator;
 use PhpParser\Node\Name;
@@ -21,7 +22,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeTraverser;
 use ReflectionClass;
-use Zend\Hydrator\AbstractHydrator;
+//use Zend\Hydrator\AbstractHydrator;
 use function explode;
 
 /**
