@@ -11,7 +11,7 @@ require __DIR__ . '/../vendor/autoload.php';
 use GeneratedHydrator\Configuration;
 use Mordilion\GeneratedAbstractHydrator\Annotation as GHA;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
-use Zend\Hydrator\AbstractHydrator;
+use Zend\Hydrator\HydratorInterface;
 
 class Book
 {
@@ -50,7 +50,7 @@ class Author
     public $books;
 }
 
-function getClassHydrator(string $class): AbstractHydrator
+function getClassHydrator(string $class): HydratorInterface
 {
     $config = new Configuration($class);
     $config->setHydratorGenerator(new AbstractHydratorGenerator());
@@ -60,7 +60,7 @@ function getClassHydrator(string $class): AbstractHydrator
         throw new \RuntimeException('Could not create Hydrator!');
     }
 
-    /** @var AbstractHydrator $hydrator */
+    /** @var HydratorInterface $hydrator */
     $hydrator = new $hydratorClass();
 
     return $hydrator;

@@ -8,9 +8,9 @@
 ```php
 use GeneratedHydrator\Configuration;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
-use Zend\Hydrator\AbstractHydrator;
+use Zend\Hydrator\HydratorInterface;
 
-function getClassHydrator(string $class): AbstractHydrator
+function getClassHydrator(string $class): HydratorInterface
 {
     $config = new Configuration($class);
     $config->setHydratorGenerator(new AbstractHydratorGenerator());
@@ -20,7 +20,7 @@ function getClassHydrator(string $class): AbstractHydrator
         throw new \RuntimeException('Could not create Hydrator!');
     }
 
-    /** @var AbstractHydrator $hydrator */
+    /** @var HydratorInterface $hydrator */
     $hydrator = new $hydratorClass();
 
     return $hydrator;

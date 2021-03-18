@@ -16,10 +16,10 @@ namespace Mordilion\GeneratedAbstractHydrator;
 use GeneratedHydrator\Configuration;
 use Mordilion\GeneratedAbstractHydrator\Annotation as GHA;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
-use Mordilion\GeneratedAbstractHydrator\Hydrator\AbstractHydrator;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 use RuntimeException;
+use Zend\Hydrator\HydratorInterface;
 
 /**
  * @author Henning Huncke <mordilion@gmx.de>
@@ -30,6 +30,11 @@ final class GeneralAnnotationTest extends TestCase
     {
         $hydrator = $this->getClassHydrator(ExampleClass::class);
         $data = [
+            'simpleCollection' => [
+                '2021-01-01',
+                '2021-02-26',
+                '2021-12-31',
+            ],
             'publicStringProp' => 'This is a string property!',
             'public_integer_prop' => '1024',
             'private_string_prop' => 'This is another string property!',
@@ -90,7 +95,7 @@ final class GeneralAnnotationTest extends TestCase
         self::assertEquals($property->getValue($object), $data['privateIntegerProp']);
     }
 
-    private function getClassHydrator(string $class): AbstractHydrator
+    private function getClassHydrator(string $class): HydratorInterface
     {
         $config = new Configuration($class);
         $config->setHydratorGenerator(new AbstractHydratorGenerator());
@@ -100,7 +105,7 @@ final class GeneralAnnotationTest extends TestCase
             throw new RuntimeException('Could not create Hydrator!');
         }
 
-        /** @var AbstractHydrator $hydrator */
+        /** @var HydratorInterface $hydrator */
         $hydrator = new $hydratorClass();
 
         return $hydrator;
@@ -111,7 +116,7 @@ final class GeneralAnnotationTest extends TestCase
 final class ExampleClass
 {
     /**
-     * @GHA\Type("array<DateTime('now')>")
+     * @GHA\Type("array<string>")
      * @var array
      */
     public $simpleCollection = [];

@@ -14,6 +14,7 @@ declare(strict_types=1);
 namespace Mordilion\GeneratedAbstractHydrator\Annotation;
 
 use DateTime;
+use DateTimeZone;
 use GeneratedHydrator\Configuration;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
 use Mordilion\GeneratedAbstractHydrator\Exception\RuntimeException;
@@ -44,13 +45,13 @@ class StrategyBuilder
         return [];
     }
 
-    public static function buildForType(string $propertyName, array $parameters, $isCollection = false): array
+    public static function buildForType(string $propertyName, array $parameters, bool $isCollection = false): array
     {
         $parts = [];
 
         foreach ($parameters as $parameter) {
             if ($parameter['type'] === 'simple') {
-                $parts = self::handleSimple($parameter, $parts);
+                $parts = self::handleSimple($parameter, $parts, $isCollection);
             }
 
             if ($parameter['type'] === 'object') {
@@ -65,13 +66,13 @@ class StrategyBuilder
         return $parts;
     }
 
-    public static function buildForStrategy(string $propertyName, array $parameters, $isCollection = false): array
+    public static function buildForStrategy(string $propertyName, array $parameters, bool $isCollection = false): array
     {
         $parts = [];
 
         foreach ($parameters as $parameter) {
             if ($parameter['type'] === 'simple') {
-                $parts = self::handleSimple($parameter, $parts);
+                $parts = self::handleSimple($parameter, $parts, $isCollection);
             }
 
             if ($parameter['type'] === 'object') {
@@ -135,13 +136,15 @@ class StrategyBuilder
         return $hydratorClass;
     }
 
-    private static function handleSimple(array $parameter, array $parts): array
+    private static function handleSimple(array $parameter, array $parts, bool $isCollection): array
     {
-        $strategyName = self::getStrategyName($parameter['name'] ?? '');
+        $name = $parameter['name'] ?? '';
         $value = $parameter['value'] ?? null;
 
-        if ($value === null && !empty($strategyName)) {
-            $parts[] = 'new ' . $strategyName . '()';
+        if ($value === null && !empty($name)) {
+            $parts[] = 'new \\' . RecursiveHydrationStrategy::class . '('
+                . '\'' . $name . '\', null, ' . ($isCollection ? 'true' : 'false')
+                . ')';
         }
 
         if ($value !== null) {
@@ -161,7 +164,7 @@ class StrategyBuilder
 
         if ($for === 'type') {
             $parts[] = 'new \\' . RecursiveHydrationStrategy::class . '('
-                . 'new \\' . self::getClassHydrator($name) . '(), new ' . $name . '(' . implode(', ', $paramsParts) . '), ' . ($isCollection ? 'true' : 'false')
+                . 'new ' . $name . '(' . implode(', ', $paramsParts) . '), new \\' . self::getClassHydrator($name) . '(), ' . ($isCollection ? 'true' : 'false')
                 . ')';
         }
 
@@ -183,6 +186,11 @@ class StrategyBuilder
 
         if ($name === DateTime::class) {
             $paramsParts = self::buildFor($for, $propertyName, $params);
+
+            if (isset($paramsParts[1])) {
+                $paramsParts[1] = new DateTimeZone($paramsParts[1]);
+            }
+
             $parts[] = 'new \\' . DateTimeFormatterStrategy::class . '(' . implode(', ', $paramsParts) . ')';
         }
 

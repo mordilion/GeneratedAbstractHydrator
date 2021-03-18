@@ -22,8 +22,33 @@ use Zend\Hydrator\Strategy\StrategyInterface;
  */
 class RecursiveHydrationStrategy implements StrategyInterface
 {
+    public const TYPE_UNKNOWN = 'unknown';
+    public const TYPE_BOOLEAN = 'boolean';
+    public const TYPE_FLOAT = 'float';
+    public const TYPE_INTEGER = 'integer';
+    public const TYPE_STRING = 'string';
+    public const TYPE_OBJECT = 'object';
+
+    public const TYPE_ALL = [
+        self::TYPE_BOOLEAN,
+        self::TYPE_FLOAT,
+        self::TYPE_INTEGER,
+        self::TYPE_STRING,
+    ];
+
+    private const TYPE_MAP = [
+        'bool' => self::TYPE_BOOLEAN,
+        'double' => self::TYPE_FLOAT,
+        'int' => self::TYPE_INTEGER,
+    ];
+
     /**
-     * @var HydratorInterface
+     * @var bool
+     */
+    private $isCollection;
+
+    /**
+     * @var ?HydratorInterface
      */
     private $hydrator;
 
@@ -33,36 +58,52 @@ class RecursiveHydrationStrategy implements StrategyInterface
     private $object;
 
     /**
-     * @var bool
+     * @var string
      */
-    private $isCollection;
+    private $type = self::TYPE_UNKNOWN;
 
     /**
-     * @var bool
+     * @param string|object $objectOrType
+     *
+     * @throws InvalidArgumentException
      */
-    private $allowNull;
-
-    public function __construct(HydratorInterface $hydrator, object $object, bool $isCollection = false)
+    public function __construct($objectOrType, ?HydratorInterface $hydrator, bool $isCollection = false)
     {
         $this->hydrator = $hydrator;
-        $this->object = $object;
         $this->isCollection = $isCollection;
+
+        if (is_string($objectOrType)) {
+            $objectOrType = self::TYPE_MAP[$objectOrType] ?? $objectOrType;
+        }
+
+        if (!is_object($objectOrType) && !in_array($objectOrType, self::TYPE_ALL, true)) {
+            throw new InvalidArgumentException('$objectOrType must be an object or a string.');
+        }
+
+        if (is_object($objectOrType)) {
+            $this->object = $objectOrType;
+            $this->type = self::TYPE_OBJECT;
+        }
+
+        if (is_string($objectOrType)) {
+            $this->type = $objectOrType;
+        }
     }
 
     /**
      * @param mixed $value
      *
-     * @return array|array[]|null
+     * @return mixed
      * @throws InvalidArgumentException
      */
-    public function extract($value): ?array
+    public function extract($value)
     {
         if ($value === null) {
             return $this->isCollection ? [] : $value;
         }
 
         if (!$this->isCollection) {
-            return $this->extractObject($value);
+            return $this->extractType($value);
         }
 
         if (!is_array($value)) {
@@ -72,7 +113,7 @@ class RecursiveHydrationStrategy implements StrategyInterface
         $collection = [];
 
         foreach ($value as $item) {
-            $collection[] = $this->extractObject($item);
+            $collection[] = $this->extractType($item);
         }
 
         return $collection;
@@ -81,16 +122,12 @@ class RecursiveHydrationStrategy implements StrategyInterface
     /**
      * @param mixed $value
      *
-     * @return object|object[]|null
+     * @return mixed
      */
     public function hydrate($value)
     {
-        if ($value === null) {
-            return $this->isCollection ? [] : $value;
-        }
-
         if (!$this->isCollection) {
-            return $this->hydrateObject($value);
+            return $this->hydrateType($value);
         }
 
         if (!is_array($value)) {
@@ -100,7 +137,7 @@ class RecursiveHydrationStrategy implements StrategyInterface
         $collection = [];
 
         foreach ($value as $item) {
-            $collection[] = $this->hydrateObject($item);
+            $collection[] = $this->hydrateType($item);
         }
 
         return $collection;
@@ -109,11 +146,14 @@ class RecursiveHydrationStrategy implements StrategyInterface
     /**
      * @param mixed $value
      *
-     * @return array|null
      * @throws InvalidArgumentException
      */
     private function extractObject($value): ?array
     {
+        if ($value === null) {
+            return null;
+        }
+
         if (!$value instanceof $this->object) {
             throw new InvalidArgumentException('$value is not an instance of "' . get_class($this->object) . '".');
         }
@@ -123,11 +163,67 @@ class RecursiveHydrationStrategy implements StrategyInterface
 
     /**
      * @param mixed $value
+     *
+     * @return mixed
      */
-    private function hydrateObject($value): object
+    private function extractType($value)
     {
+        if ($this->type === self::TYPE_OBJECT) {
+            return $this->extractObject($value);
+        }
+
+        return $this->convertType($value);
+    }
+
+    /**
+     * @param mixed $value
+     */
+    private function hydrateObject($value): ?object
+    {
+        if ($value === null) {
+            return null;
+        }
+
         $instance = clone $this->object;
 
         return $this->hydrator->hydrate($value, $instance);
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return mixed
+     */
+    private function hydrateType($value)
+    {
+        if ($this->type === self::TYPE_OBJECT) {
+            return $this->hydrateObject($value);
+        }
+
+        return $this->convertType($value);
+    }
+
+    /**
+     * @param mixed $value
+     *
+     * @return bool|float|int|string|null
+     */
+    private function convertType($value)
+    {
+        switch ($this->type) {
+            case self::TYPE_BOOLEAN:
+                return (bool) $value;
+
+            case self::TYPE_FLOAT:
+                return (float) $value;
+
+            case self::TYPE_INTEGER:
+                return (int) $value;
+
+            case self::TYPE_STRING:
+                return (string) $value;
+        }
+
+        return null;
     }
 }
