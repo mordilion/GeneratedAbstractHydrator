@@ -126,10 +126,6 @@ class RecursiveHydrationStrategy implements StrategyInterface
             return null;
         }
 
-        if (!$this->hydrator instanceof HydratorInterface) {
-            throw new InvalidArgumentException('No hydrator provided!');
-        }
-
         $instance = clone $this->object;
 
         return $this->hydrator->hydrate($value, $instance);
