@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Composer\Autoload\ClassLoader;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
-use Mordilion\GeneratedAbstractHydrator\Annotation as GHA;
 
 /** @var ClassLoader $autloader */
 $autloader = require __DIR__ . '/../vendor/autoload.php';
@@ -14,7 +13,6 @@ $iterations = 10000;
 class Example
 {
     /**
-     * @GHA\Type("DateTime<'Y-m-d'>")
      * @var DateTime
      */
     public $anno;
@@ -42,19 +40,34 @@ $config->setHydratorGenerator(new AbstractHydratorGenerator());
 $config->setGeneratedClassesTargetDir(__DIR__ . '/performance');
 $hydratorClass = $config->createFactory()->getHydratorClass();
 
+$dateTimeStrategy = new \Zend\Hydrator\Strategy\DateTimeFormatterStrategy('Y-m-d');
+
+/** @var \Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator $generatedHydrator */
+$generatedHydrator = new $hydratorClass();
+$generatedHydrator->addStrategy('anno', $dateTimeStrategy);
+
+$classMethodsHydrator = new Zend\Hydrator\ClassMethods();
+$classMethodsHydrator->addStrategy('anno', $dateTimeStrategy);
+
+$reflectionHydrator = new Zend\Hydrator\Reflection();
+$reflectionHydrator->addStrategy('anno', $dateTimeStrategy);
+
+$arraySerializableHydrator = new Zend\Hydrator\ArraySerializable();
+$arraySerializableHydrator->addStrategy('anno', $dateTimeStrategy);
+
 $hydrators = array(
-    new $hydratorClass(),
-    new Zend\Hydrator\ClassMethods(),
-    new Zend\Hydrator\Reflection(),
-    new Zend\Hydrator\ArraySerializable(),
+    $generatedHydrator,
+    $classMethodsHydrator,
+    $reflectionHydrator,
+    $arraySerializableHydrator,
 );
 
-foreach ($hydrators as $hydrator) {
+foreach ($hydrators as $generatedHydrator) {
     $start = microtime(true);
 
-    for ($i = 0; $i < $iterations; $i += 1) {
-        $hydrator->hydrate($data, $object);
-        $hydrator->extract($object);
+    for ($i = 0; $i < $iterations; $i++) {
+        $generatedHydrator->hydrate($data, $object);
+        $generatedHydrator->extract($object);
     }
 
     var_dump(microtime(true) - $start);

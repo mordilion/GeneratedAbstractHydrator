@@ -13,6 +13,7 @@ declare(strict_types=1);
 
 namespace Mordilion\GeneratedAbstractHydrator\Hydrator;
 
+use Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException;
 use Zend\Hydrator\Strategy\StrategyInterface;
 
 /**
@@ -25,21 +26,43 @@ trait StrategyEnabledTrait
      */
     private $strategies = [];
 
+    /**
+     * @param string $name
+     */
     public function addStrategy($name, StrategyInterface $strategy): void
     {
         $this->strategies[$name] = $strategy;
     }
 
-    public function getStrategy($name): ?StrategyInterface
+    /**
+     * @param string $name
+     */
+    public function getStrategy($name): StrategyInterface
     {
-        return $this->strategies[$name] ?? ($this->strategies['*'] ?? null);
+        $strategy = $this->strategies[$name] ?? ($this->strategies['*'] ?? null);
+
+        if ($strategy) {
+            return $strategy;
+        }
+
+        throw new InvalidArgumentException(sprintf(
+            '%s: no strategy by name of "%s", and no wildcard strategy present',
+            __METHOD__,
+            $name
+        ));
     }
 
+    /**
+     * @param string $name
+     */
     public function hasStrategy($name): bool
     {
         return isset($this->strategies[$name]) || isset($this->strategies['*']);
     }
 
+    /**
+     * @param string $name
+     */
     public function removeStrategy($name): void
     {
         unset($this->strategies[$name]);

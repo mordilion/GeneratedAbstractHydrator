@@ -2,10 +2,8 @@
 
 /**
  * This file is part of the GeneratedAbstractHydrator package.
- *
  * For the full copyright and license information, please view the
  * LICENSE file that was distributed with this source code.
- *
  * @copyright (c) Henning Huncke - <mordilion@gmx.de>
  */
 
@@ -13,12 +11,6 @@ declare(strict_types=1);
 
 namespace Mordilion\GeneratedAbstractHydrator\CodeGenerator\Visitor;
 
-use Doctrine\Common\Annotations\AnnotationReader;
-use Mordilion\GeneratedAbstractHydrator\Annotation\ParserAwareInterface;
-use Mordilion\GeneratedAbstractHydrator\Annotation\SerializedName;
-use Mordilion\GeneratedAbstractHydrator\Annotation\Strategy;
-use Mordilion\GeneratedAbstractHydrator\Annotation\Type;
-use Mordilion\GeneratedAbstractHydrator\Annotation\StrategyBuilder;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Param;
@@ -30,8 +22,6 @@ use PhpParser\NodeVisitorAbstract;
 use PhpParser\ParserFactory;
 use ReflectionClass;
 use ReflectionProperty;
-use Zend\Hydrator\NamingStrategy\ArrayMapNamingStrategy;
-use Zend\Hydrator\Strategy\StrategyChain;
 use function array_merge;
 use function implode;
 use function var_export;
@@ -42,48 +32,19 @@ use function var_export;
 class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
 {
     /**
-     * @var ReflectionProperty[]
+     * @var ReflectionProperty[][]
      */
-    private $allProperties = [];
+    private $hiddenPropertyMap = [];
 
     /**
      * @var ReflectionProperty[]
      */
     private $visiblePropertyMap = [];
 
-    /**
-     * @var ReflectionProperty[][]
-     */
-    private $hiddenPropertyMap = [];
-
-    /**
-     * @var string[]
-     */
-    private $nameMapping = [];
-
-    /**
-     * @var object[][][]
-     */
-    private $propertyAnnotations = [];
-
-    /**
-     * @var AnnotationReader
-     */
-    private $annotationReader;
-
     public function __construct(ReflectionClass $reflectedClass)
     {
-        $this->annotationReader = new AnnotationReader();
-
         foreach ($this->findAllInstanceProperties($reflectedClass) as $property) {
             $className = $property->getDeclaringClass()->getName();
-            $serializedPropertyName = $this->getSerializedPropertyName($property);
-
-            if ($serializedPropertyName !== $property->getName()) {
-                $this->nameMapping[$property->getName()] = $serializedPropertyName;
-            }
-
-            $this->allProperties[] = $property;
 
             if ($property->isPrivate() || $property->isProtected()) {
                 $this->hiddenPropertyMap[$className][] = $property;
@@ -136,47 +97,15 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * @param string[] $parts
-     * @param ReflectionProperty[] $properties
-     */
-    private function appendStrategies(array &$parts, array $properties): void
-    {
-        $bodyParts = [];
-
-        foreach ($properties as $property) {
-            $propertyName = $property->getName();
-            /** @var ParserAwareInterface[] $annotations */
-            $annotations = $this->getAnnotations($property, [Type::class, Strategy::class]);
-
-            if (empty($annotations)) {
-                continue;
-            }
-
-            $bodyParts[] = '$this->addStrategy(\'' . $propertyName . '\', new \\' . StrategyChain::class . '([';
-
-            foreach ($annotations as $annotation) {
-                foreach (StrategyBuilder::build($property, $annotation) as $strategy) {
-                    $bodyParts[] = $strategy . ',';
-                }
-            }
-
-            $bodyParts[] = ']));';
-        }
-
-        $parts = array_merge($parts, $bodyParts);
-    }
-
-    /**
-     * @param string[] $parts
+     * @param string[]             $parts
      * @param ReflectionProperty[] $properties
      */
     private function appendHydrateClosureParts(array &$parts, array $properties): void
     {
         foreach ($properties as $property) {
             $propertyName = $property->getName();
-            $serializedPropertyName = $this->getSerializedPropertyName($property);
 
-            $parts[] = "    \$name = '" . $serializedPropertyName . "';";
+            $parts[] = "    \$name = '" . $propertyName . "';";
             $parts[] = "    if (isset(\$data[\$name]) || " .
                 '$object->' . $propertyName . " !== null && \\array_key_exists(\$name, \$data)) {";
             $parts[] = $this->getPropertyHydrateString($property, 2, true);
@@ -185,15 +114,15 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * @param string[] $parts
+     * @param string[]             $parts
      * @param ReflectionProperty[] $properties
      */
     private function appendExtractClosureParts(array &$parts, array $properties): void
     {
         foreach ($properties as $property) {
-            $serializedPropertyName = $this->getSerializedPropertyName($property);
+            $propertyName = $property->getName();
 
-            $parts[] = "    \$name = '" . $serializedPropertyName . "';";
+            $parts[] = "    \$name = '" . $propertyName . "';";
             $parts[] = $this->getPropertyExtractString($property, 1, true);
         }
     }
@@ -201,20 +130,7 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
     private function replaceConstructor(ClassMethod $method): void
     {
         $method->params = [];
-        $bodyParts = ['parent::__construct();', ''];
-
-        // Add ArrayMapNamingStrategy for SerializedName-Annotations
-        if (!empty($this->nameMapping)) {
-            $elements = '';
-
-            foreach ($this->nameMapping as $key => $value) {
-                $elements = "'" . $key . "' => '" . $value . "', ";
-            }
-
-            $bodyParts[] = '$this->setNamingStrategy(new \\' . ArrayMapNamingStrategy::class . '([' . $elements . ']));';
-        }
-
-        $this->appendStrategies($bodyParts, $this->allProperties);
+        $bodyParts = [];
 
         foreach ($this->hiddenPropertyMap as $className => $properties) {
             // Hydrate closures
@@ -243,19 +159,17 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
 
         foreach ($this->visiblePropertyMap as $property) {
             $propertyName = $property->getName();
-            $serializedPropertyName = $this->getSerializedPropertyName($property);
 
-            $bodyParts[] = "\$name = '" . $serializedPropertyName . "';";
+            $bodyParts[] = "\$name = '" . $propertyName . "';";
             $bodyParts[] = "if (isset(\$data[\$name]) || " .
                 '$object->' . $propertyName . " !== null && \\array_key_exists(\$name, \$data)) {";
             $bodyParts[] = $this->getPropertyHydrateString($property, 1);
             $bodyParts[] = '}';
         }
 
-        $index = 0;
-
-        foreach ($this->hiddenPropertyMap as $className => $properties) {
-            $bodyParts[] = '$this->hydrateCallbacks[' . ($index++) . ']->__invoke($object, $data, $this);';
+        $count = count($this->hiddenPropertyMap);
+        for ($i = 1; $i < $count; $i++) {
+            $bodyParts[] = '$this->hydrateCallbacks[' . $i . ']->__invoke($object, $data, $this);';
         }
 
         $bodyParts[] = 'return $object;';
@@ -267,13 +181,13 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
     private function replaceExtract(ClassMethod $method): void
     {
         $method->params = [new Param(new Node\Expr\Variable('object'))];
-        $bodyParts   = [];
+        $bodyParts = [];
         $bodyParts[] = '$data = [];';
 
         foreach ($this->visiblePropertyMap as $property) {
-            $serializedPropertyName = $this->getSerializedPropertyName($property);
+            $propertyName = $property->getName();
 
-            $bodyParts[] = "\$name = '" . $serializedPropertyName . "';";
+            $bodyParts[] = "\$name = '" . $propertyName . "';";
             $bodyParts[] = $this->getPropertyExtractString($property, 1);
         }
 
@@ -291,7 +205,6 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
 
     /**
      * Finds or creates a class method (and eventually attaches it to the class itself)
-     *
      * @deprecated not needed if we move away from code replacement
      */
     private function findOrCreateMethod(Class_ $class, string $name): ClassMethod
@@ -312,63 +225,13 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         return $method;
     }
 
-    /**
-     * @param string[] $class
-     *
-     * @return object[]
-     */
-    private function getAnnotations(ReflectionProperty $property, array $classes): array
-    {
-        $annotations = [];
-
-        foreach ($classes as $class) {
-            $annotations[] = $this->getAnnotation($property, $class);
-        }
-
-        return array_merge(...$annotations);
-    }
-
-    /**
-     * @return object[]
-     */
-    private function getAnnotation(ReflectionProperty $property, string $class): array
-    {
-        if (isset($this->propertyAnnotations[$property->getName()][$class])) {
-            return $this->propertyAnnotations[$property->getName()][$class] ?? [];
-        }
-
-        $annotations = $this->annotationReader->getPropertyAnnotations($property);
-
-        foreach ($annotations as $annotation) {
-            if ($annotation instanceof $class) {
-                $this->propertyAnnotations[$property->getName()][$class][] = $annotation;
-            }
-        }
-
-        return $this->propertyAnnotations[$property->getName()][$class] ?? [];
-    }
-
-    private function getSerializedPropertyName(ReflectionProperty $property): string
-    {
-        /** @var SerializedName[] $annotations */
-        $annotations = $this->getAnnotation($property, SerializedName::class);
-
-        if (empty($annotations)) {
-            return $property->getName();
-        }
-
-        $annotation = reset($annotations);
-
-        return $annotation->getName();
-    }
-
     private function getPropertyHydrateString(ReflectionProperty $property, int $indent, bool $isThat = false)
     {
         $propertyName = $property->getName();
 
         $result = str_repeat('    ', $indent);
         $result .= '$object->' . $propertyName . " = ";
-        $result .= ($isThat ? '$that' : '$this') . "->hydrateValue('" . $propertyName . "', \$data[\$name], \$object)";
+        $result .= ($isThat ? '$that' : '$this') . "->hydrateValue('" . $propertyName . "', \$data[\$name], \$data)";
         $result .= ";";
 
         return $result;

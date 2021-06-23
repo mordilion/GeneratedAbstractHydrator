@@ -14,9 +14,9 @@ declare(strict_types=1);
 namespace Mordilion\GeneratedAbstractHydrator\ClassGenerator;
 
 use CodeGenerationUtils\Visitor\ClassExtensionVisitor;
-use Mordilion\GeneratedAbstractHydrator\Hydrator\AbstractHydrator;
 use Mordilion\GeneratedAbstractHydrator\CodeGenerator\Visitor\AbstractHydratorMethodsVisitor;
 use GeneratedHydrator\ClassGenerator\HydratorGenerator;
+use Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Namespace_;
@@ -40,7 +40,7 @@ class AbstractHydratorGenerator implements HydratorGenerator
 
         $implementor = new NodeTraverser();
         $implementor->addVisitor(new AbstractHydratorMethodsVisitor($originalClass));
-        $implementor->addVisitor(new ClassExtensionVisitor($originalClass->getName(), AbstractHydrator::class));
+        $implementor->addVisitor(new ClassExtensionVisitor($originalClass->getName(), PerformantAbstractHydrator::class));
 
         return $implementor->traverse($ast);
     }

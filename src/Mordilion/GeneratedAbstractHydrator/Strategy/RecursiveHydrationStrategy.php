@@ -158,6 +158,10 @@ class RecursiveHydrationStrategy implements StrategyInterface
             throw new InvalidArgumentException('$value is not an instance of "' . get_class($this->object) . '".');
         }
 
+        if (!$this->hydrator instanceof HydratorInterface) {
+            throw new InvalidArgumentException('No hydrator provided!');
+        }
+
         return $this->hydrator->extract($value);
     }
 
@@ -177,11 +181,17 @@ class RecursiveHydrationStrategy implements StrategyInterface
 
     /**
      * @param mixed $value
+     *
+     * @throws InvalidArgumentException
      */
     private function hydrateObject($value): ?object
     {
         if ($value === null) {
             return null;
+        }
+
+        if (!$this->hydrator instanceof HydratorInterface) {
+            throw new InvalidArgumentException('No hydrator provided!');
         }
 
         $instance = clone $this->object;
