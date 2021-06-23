@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Mordilion\GeneratedAbstractHydrator\Tests;
 
+use DateTime;
 use GeneratedHydrator\Configuration;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
 use Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator;
@@ -11,6 +12,7 @@ use Mordilion\GeneratedAbstractHydrator\Strategy\RecursiveHydrationStrategy;
 use Mordilion\GeneratedAbstractHydrator\Tests\ExampleClasses\Author;
 use Mordilion\GeneratedAbstractHydrator\Tests\ExampleClasses\Book;
 use PHPUnit\Framework\TestCase;
+use Zend\Hydrator\NamingStrategy\UnderscoreNamingStrategy;
 use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
 
 class GeneratedAbstractHydratorTest extends TestCase
@@ -32,18 +34,33 @@ class GeneratedAbstractHydratorTest extends TestCase
         $bookHydrator->addStrategy('publishedAt', new DateTimeFormatterStrategy('Y-m-d'));
 
         $authorHydrator = $this->getClassHydrator(Author::class);
+        $authorHydrator->setNamingStrategy(new UnderscoreNamingStrategy());
         $authorHydrator->addStrategy('books', new RecursiveHydrationStrategy(new Book(), $bookHydrator, true));
 
         $object = new Author();
         $authorHydrator->hydrate($data, $object);
 
-        var_dump($object);
+        self::assertEquals($data['name'], $object->name);
+        self::assertEquals($data['first_name'], $object->firstName);
+
+        self::assertEquals($data['books'][0]['title'], $object->books[0]->title);
+        self::assertInstanceOf(DateTime::class, $object->books[0]->publishedAt);
+        self::assertEquals($data['books'][0]['publishedAt'], $object->books[0]->publishedAt->format('Y-m-d'));
+
+        self::assertEquals($data['books'][1]['title'], $object->books[1]->title);
+        self::assertInstanceOf(DateTime::class, $object->books[1]->publishedAt);
+        self::assertEquals($data['books'][1]['publishedAt'], $object->books[1]->publishedAt->format('Y-m-d'));
+
+        self::assertEquals($data['books'][2]['title'], $object->books[2]->title);
+        self::assertInstanceOf(DateTime::class, $object->books[2]->publishedAt);
+        self::assertEquals($data['books'][2]['publishedAt'], $object->books[2]->publishedAt->format('Y-m-d'));
     }
 
-    function getClassHydrator(string $class): PerformantAbstractHydrator
+    private function getClassHydrator(string $class): PerformantAbstractHydrator
     {
         $config = new Configuration($class);
         $config->setHydratorGenerator(new AbstractHydratorGenerator(PerformantAbstractHydrator::class));
+        $config->setGeneratedClassesTargetDir(__DIR__ . '/GeneratedClasses');
         $hydratorClass = $config->createFactory()->getHydratorClass();
 
         if (!class_exists($hydratorClass)) {

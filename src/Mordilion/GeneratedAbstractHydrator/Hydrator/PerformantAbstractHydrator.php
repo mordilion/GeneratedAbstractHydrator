@@ -14,14 +14,28 @@ declare(strict_types=1);
 namespace Mordilion\GeneratedAbstractHydrator\Hydrator;
 
 use Zend\Hydrator\HydratorInterface;
+use Zend\Hydrator\NamingStrategyEnabledInterface;
 use Zend\Hydrator\StrategyEnabledInterface;
 
 /**
  * @author Henning Huncke <mordilion@gmx.de>
  */
-abstract class PerformantAbstractHydrator implements HydratorInterface, StrategyEnabledInterface
+abstract class PerformantAbstractHydrator implements HydratorInterface, StrategyEnabledInterface, NamingStrategyEnabledInterface
 {
     use StrategyEnabledTrait;
+    use NamingStrategyEnabledTrait;
+
+    /**
+     * @throws \Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException
+     */
+    public function extractName(string $name, ?object $object = null): string
+    {
+        if ($this->hasNamingStrategy()) {
+            $name = $this->getNamingStrategy()->extract($name, $object);
+        }
+
+        return (string) $name;
+    }
 
     /**
      * @param mixed $value
@@ -37,6 +51,18 @@ abstract class PerformantAbstractHydrator implements HydratorInterface, Strategy
         }
 
         return $value;
+    }
+
+    /**
+     * @throws \Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException
+     */
+    public function hydrateName(string $name, ?array $data = null): string
+    {
+        if ($this->hasNamingStrategy()) {
+            $name = $this->getNamingStrategy()->hydrate($name, $data);
+        }
+
+        return (string) $name;
     }
 
     /**

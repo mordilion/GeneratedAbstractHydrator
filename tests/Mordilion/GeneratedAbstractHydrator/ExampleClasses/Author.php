@@ -14,7 +14,7 @@ class Author
     /**
      * @var string
      */
-    public $firstname;
+    public $firstName;
 
     /**
      * @var Book[]

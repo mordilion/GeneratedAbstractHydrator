@@ -105,7 +105,7 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         foreach ($properties as $property) {
             $propertyName = $property->getName();
 
-            $parts[] = "    \$name = '" . $propertyName . "';";
+            $parts[] = "    \$name = \$this->extractName('" . $propertyName . "', \$object);";
             $parts[] = "    if (isset(\$data[\$name]) || " .
                 '$object->' . $propertyName . " !== null && \\array_key_exists(\$name, \$data)) {";
             $parts[] = $this->getPropertyHydrateString($property, 2, true);
@@ -122,7 +122,7 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         foreach ($properties as $property) {
             $propertyName = $property->getName();
 
-            $parts[] = "    \$name = '" . $propertyName . "';";
+            $parts[] = "    \$name = \$this->hydrateName('" . $propertyName . "', \$data);";
             $parts[] = $this->getPropertyExtractString($property, 1, true);
         }
     }
@@ -160,7 +160,7 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         foreach ($this->visiblePropertyMap as $property) {
             $propertyName = $property->getName();
 
-            $bodyParts[] = "\$name = '" . $propertyName . "';";
+            $bodyParts[] = "\$name = \$this->extractName('" . $propertyName . "', \$object);";
             $bodyParts[] = "if (isset(\$data[\$name]) || " .
                 '$object->' . $propertyName . " !== null && \\array_key_exists(\$name, \$data)) {";
             $bodyParts[] = $this->getPropertyHydrateString($property, 1);
@@ -187,7 +187,7 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         foreach ($this->visiblePropertyMap as $property) {
             $propertyName = $property->getName();
 
-            $bodyParts[] = "\$name = '" . $propertyName . "';";
+            $bodyParts[] = "\$name = \$this->hydrateName('" . $propertyName . "', \$data);";
             $bodyParts[] = $this->getPropertyExtractString($property, 1);
         }
 

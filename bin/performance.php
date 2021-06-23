@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Composer\Autoload\ClassLoader;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
+use Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator;
 
 /** @var ClassLoader $autloader */
 $autloader = require __DIR__ . '/../vendor/autoload.php';
@@ -36,13 +37,13 @@ class Example
 $object = new Example();
 $data = array('anno' => '2021-02-26', 'foo' => 1, 'bar' => 2, 'baz' => 3);
 $config = new GeneratedHydrator\Configuration('Example');
-$config->setHydratorGenerator(new AbstractHydratorGenerator());
+$config->setHydratorGenerator(new AbstractHydratorGenerator(PerformantAbstractHydrator::class));
 $config->setGeneratedClassesTargetDir(__DIR__ . '/performance');
 $hydratorClass = $config->createFactory()->getHydratorClass();
 
 $dateTimeStrategy = new \Zend\Hydrator\Strategy\DateTimeFormatterStrategy('Y-m-d');
 
-/** @var \Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator $generatedHydrator */
+/** @var PerformantAbstractHydrator $generatedHydrator */
 $generatedHydrator = new $hydratorClass();
 $generatedHydrator->addStrategy('anno', $dateTimeStrategy);
 
