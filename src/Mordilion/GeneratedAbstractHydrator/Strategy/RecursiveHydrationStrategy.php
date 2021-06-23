@@ -22,26 +22,6 @@ use Zend\Hydrator\Strategy\StrategyInterface;
  */
 class RecursiveHydrationStrategy implements StrategyInterface
 {
-    public const TYPE_UNKNOWN = 'unknown';
-    public const TYPE_BOOLEAN = 'boolean';
-    public const TYPE_FLOAT = 'float';
-    public const TYPE_INTEGER = 'integer';
-    public const TYPE_STRING = 'string';
-    public const TYPE_OBJECT = 'object';
-
-    public const TYPE_ALL = [
-        self::TYPE_BOOLEAN,
-        self::TYPE_FLOAT,
-        self::TYPE_INTEGER,
-        self::TYPE_STRING,
-    ];
-
-    private const TYPE_MAP = [
-        'bool' => self::TYPE_BOOLEAN,
-        'double' => self::TYPE_FLOAT,
-        'int' => self::TYPE_INTEGER,
-    ];
-
     /**
      * @var bool
      */
@@ -57,37 +37,11 @@ class RecursiveHydrationStrategy implements StrategyInterface
      */
     private $object;
 
-    /**
-     * @var string
-     */
-    private $type = self::TYPE_UNKNOWN;
-
-    /**
-     * @param string|object $objectOrType
-     *
-     * @throws InvalidArgumentException
-     */
-    public function __construct($objectOrType, ?HydratorInterface $hydrator, bool $isCollection = false)
+    public function __construct(object $object, ?HydratorInterface $hydrator, bool $isCollection = false)
     {
         $this->hydrator = $hydrator;
         $this->isCollection = $isCollection;
-
-        if (is_string($objectOrType)) {
-            $objectOrType = self::TYPE_MAP[$objectOrType] ?? $objectOrType;
-        }
-
-        if (!is_object($objectOrType) && !in_array($objectOrType, self::TYPE_ALL, true)) {
-            throw new InvalidArgumentException('$objectOrType must be an object or a string.');
-        }
-
-        if (is_object($objectOrType)) {
-            $this->object = $objectOrType;
-            $this->type = self::TYPE_OBJECT;
-        }
-
-        if (is_string($objectOrType)) {
-            $this->type = $objectOrType;
-        }
+        $this->object = $object;
     }
 
     /**
@@ -103,7 +57,7 @@ class RecursiveHydrationStrategy implements StrategyInterface
         }
 
         if (!$this->isCollection) {
-            return $this->extractType($value);
+            return $this->extractObject($value);
         }
 
         if (!is_array($value)) {
@@ -113,7 +67,7 @@ class RecursiveHydrationStrategy implements StrategyInterface
         $collection = [];
 
         foreach ($value as $item) {
-            $collection[] = $this->extractType($item);
+            $collection[] = $this->extractObject($item);
         }
 
         return $collection;
@@ -127,7 +81,7 @@ class RecursiveHydrationStrategy implements StrategyInterface
     public function hydrate($value)
     {
         if (!$this->isCollection) {
-            return $this->hydrateType($value);
+            return $this->hydrateObject($value);
         }
 
         if (!is_array($value)) {
@@ -137,7 +91,7 @@ class RecursiveHydrationStrategy implements StrategyInterface
         $collection = [];
 
         foreach ($value as $item) {
-            $collection[] = $this->hydrateType($item);
+            $collection[] = $this->hydrateObject($item);
         }
 
         return $collection;
@@ -168,20 +122,6 @@ class RecursiveHydrationStrategy implements StrategyInterface
     /**
      * @param mixed $value
      *
-     * @return mixed
-     */
-    private function extractType($value)
-    {
-        if ($this->type === self::TYPE_OBJECT) {
-            return $this->extractObject($value);
-        }
-
-        return $this->convertType($value);
-    }
-
-    /**
-     * @param mixed $value
-     *
      * @throws InvalidArgumentException
      */
     private function hydrateObject($value): ?object
@@ -197,43 +137,5 @@ class RecursiveHydrationStrategy implements StrategyInterface
         $instance = clone $this->object;
 
         return $this->hydrator->hydrate($value, $instance);
-    }
-
-    /**
-     * @param mixed $value
-     *
-     * @return mixed
-     */
-    private function hydrateType($value)
-    {
-        if ($this->type === self::TYPE_OBJECT) {
-            return $this->hydrateObject($value);
-        }
-
-        return $this->convertType($value);
-    }
-
-    /**
-     * @param mixed $value
-     *
-     * @return bool|float|int|string|null
-     */
-    private function convertType($value)
-    {
-        switch ($this->type) {
-            case self::TYPE_BOOLEAN:
-                return (bool) $value;
-
-            case self::TYPE_FLOAT:
-                return (float) $value;
-
-            case self::TYPE_INTEGER:
-                return (int) $value;
-
-            case self::TYPE_STRING:
-                return (string) $value;
-        }
-
-        return null;
     }
 }

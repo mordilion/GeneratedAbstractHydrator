@@ -12,7 +12,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "Mordilion\\GeneratedAbstractHydrator\\": "src/Mordilion/GeneratedAbstractHydrator"
+            "Mordilion\\GeneratedAbstractHydrator\\": "src/Mordilion/GeneratedAbstractHydrator",
+            "Mordilion\\GeneratedAbstractHydrator\\Tests\\": "tests/Mordilion/GeneratedAbstractHydrator"
         }
     },
     "require": {

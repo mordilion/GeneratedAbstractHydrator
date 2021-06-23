@@ -16,12 +16,13 @@ namespace Mordilion\GeneratedAbstractHydrator\ClassGenerator;
 use CodeGenerationUtils\Visitor\ClassExtensionVisitor;
 use Mordilion\GeneratedAbstractHydrator\CodeGenerator\Visitor\AbstractHydratorMethodsVisitor;
 use GeneratedHydrator\ClassGenerator\HydratorGenerator;
-use Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator;
+use Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\NodeTraverser;
 use ReflectionClass;
+use Zend\Hydrator\HydratorInterface;
 use function explode;
 
 /**
@@ -29,6 +30,29 @@ use function explode;
  */
 class AbstractHydratorGenerator implements HydratorGenerator
 {
+    /**
+     * @var class-string
+     */
+    private $abstractClass;
+
+    /**
+     * @param class-string $abstractClass
+     */
+    public function __construct(string $abstractClass)
+    {
+        $reflection = new ReflectionClass($abstractClass);
+
+        if (!$reflection->isSubclassOf(HydratorInterface::class)) {
+            throw new InvalidArgumentException(sprintf('The provided $abstractClass must be a sub class of %s', HydratorInterface::class));
+        }
+
+        if (!$reflection->isAbstract()) {
+            throw new InvalidArgumentException('The provided $abstractClass must be an abstract class');
+        }
+
+        $this->abstractClass = $abstractClass;
+    }
+
     public function generate(ReflectionClass $originalClass): array
     {
         $ast = [new Class_($originalClass->getShortName())];
@@ -40,7 +64,7 @@ class AbstractHydratorGenerator implements HydratorGenerator
 
         $implementor = new NodeTraverser();
         $implementor->addVisitor(new AbstractHydratorMethodsVisitor($originalClass));
-        $implementor->addVisitor(new ClassExtensionVisitor($originalClass->getName(), PerformantAbstractHydrator::class));
+        $implementor->addVisitor(new ClassExtensionVisitor($originalClass->getName(), $this->abstractClass));
 
         return $implementor->traverse($ast);
     }

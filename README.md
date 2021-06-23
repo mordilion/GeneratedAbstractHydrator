@@ -8,38 +8,37 @@
 ```php
 use GeneratedHydrator\Configuration;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
-use Zend\Hydrator\HydratorInterface;
+use Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator;
 
-function getClassHydrator(string $class): HydratorInterface
+function getClassHydrator(string $class): PerformantAbstractHydrator
 {
     $config = new Configuration($class);
-    $config->setHydratorGenerator(new AbstractHydratorGenerator());
+    $config->setHydratorGenerator(new AbstractHydratorGenerator(PerformantAbstractHydrator::class));
     $hydratorClass = $config->createFactory()->getHydratorClass();
 
     if (!class_exists($hydratorClass)) {
         throw new \RuntimeException('Could not create Hydrator!');
     }
 
-    /** @var HydratorInterface $hydrator */
+    /** @var PerformantAbstractHydrator $hydrator */
     $hydrator = new $hydratorClass();
 
     return $hydrator;
 }
 ```
-#### Annotations
+#### Usage of nested Objects
 ```php
-use Mordilion\GeneratedAbstractHydrator\Annotation as GHA;
+use Mordilion\GeneratedAbstractHydrator\Strategy\RecursiveHydrationStrategy;
+use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
 
 class Book
 {
     /**
-     * @GHA\Type("string")
      * @var string
      */
     public $title;
     
     /**
-     * @GHA\Type("DateTime<'Y-m-d'>")
      * @var DateTime
      */
     public $publishedAt;
@@ -48,20 +47,16 @@ class Book
 class Author
 {
     /**
-     * @GHA\Type("string")
      * @var string
      */
     public $name;
     
     /**
-     * @GHA\Type("string")
-     * @GHA\SerializedName("first_name") 
      * @var string
      */
     public $firstname;
     
     /**
-     * @GHA\Type("array<Book>") 
      * @var Book[]
      */
     public $books;
@@ -79,10 +74,14 @@ $data = [
     ],
 ];
 
-$hydrator = getClassHydrator(Author::class);
+$bookHydrator = getClassHydrator(Book::class);
+$bookHydrator->addStrategy('publishedAt', new DateTimeFormatterStrategy('Y-m-d'));
+
+$authorHydrator = getClassHydrator(Author::class);
+$authorHydrator->addStrategy('books', new RecursiveHydrationStrategy(new Book(), $bookHydrator, true));
 
 $object = new Author();
-$hydrator->hydrate($data, $object);
+$authorHydrator->hydrate($data, $object);
 
 var_dump($object);
 ```
