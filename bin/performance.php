@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Composer\Autoload\ClassLoader;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
 use Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator;
+use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
 
 /** @var ClassLoader $autloader */
 $autloader = require __DIR__ . '/../vendor/autoload.php';
@@ -41,7 +42,7 @@ $config->setHydratorGenerator(new AbstractHydratorGenerator(PerformantAbstractHy
 $config->setGeneratedClassesTargetDir(__DIR__ . '/performance');
 $hydratorClass = $config->createFactory()->getHydratorClass();
 
-$dateTimeStrategy = new \Zend\Hydrator\Strategy\DateTimeFormatterStrategy('Y-m-d');
+$dateTimeStrategy = new DateTimeFormatterStrategy('Y-m-d');
 
 /** @var PerformantAbstractHydrator $generatedHydrator */
 $generatedHydrator = new $hydratorClass();
