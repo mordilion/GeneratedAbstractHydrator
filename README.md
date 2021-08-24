@@ -66,7 +66,7 @@ class Author
 
 $data = [
     'name' => 'Böll',
-    'first_name' => 'Heinrich',
+    'firstname' => 'Heinrich',
     'books' => [
         ['title' => 'Die schwarzen Schafe', 'publishedAt' => '1951-01-01'],
         ['title' => 'Wo warst du, Adam?', 'publishedAt' => '1951-01-01'],

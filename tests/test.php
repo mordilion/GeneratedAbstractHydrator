@@ -9,9 +9,11 @@ ini_set('xdebug.var_display_max_data', '1024');
 require __DIR__ . '/../vendor/autoload.php';
 
 use GeneratedHydrator\Configuration;
-use Mordilion\GeneratedAbstractHydrator\Annotation as GHA;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
+use Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator;
+use Mordilion\GeneratedAbstractHydrator\Strategy\RecursiveHydrationStrategy;
 use Zend\Hydrator\HydratorInterface;
+use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
 
 class Book
 {
@@ -53,7 +55,7 @@ class Author
 function getClassHydrator(string $class): HydratorInterface
 {
     $config = new Configuration($class);
-    $config->setHydratorGenerator(new AbstractHydratorGenerator());
+    $config->setHydratorGenerator(new AbstractHydratorGenerator(PerformantAbstractHydrator::class));
     $hydratorClass = $config->createFactory()->getHydratorClass();
 
     if (!class_exists($hydratorClass)) {
@@ -68,7 +70,7 @@ function getClassHydrator(string $class): HydratorInterface
 
 $data = [
     'name' => 'Böll',
-    'first_name' => 'Heinrich',
+    'firstname' => 'Heinrich',
     'books' => [
         ['title' => 'Die schwarzen Schafe', 'publishedAt' => '1951-01-01'],
         ['title' => 'Wo warst du, Adam?', 'publishedAt' => '1951-01-01'],
@@ -76,10 +78,14 @@ $data = [
     ],
 ];
 
-$hydrator = getClassHydrator(Author::class);
+$bookHydrator = getClassHydrator(Book::class);
+$bookHydrator->addStrategy('publishedAt', new DateTimeFormatterStrategy('Y-m-d'));
+
+$authorHydrator = getClassHydrator(Author::class);
+$authorHydrator->addStrategy('books', new RecursiveHydrationStrategy(new Book(), $bookHydrator, true));
 
 $object = new Author();
-$hydrator->hydrate($data, $object);
+$authorHydrator->hydrate($data, $object);
 
 var_dump($object);
 
