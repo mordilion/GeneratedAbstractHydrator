@@ -42,11 +42,11 @@ trait NamingStrategyEnabledTrait
      */
     public function getNamingStrategy()
     {
-        if (!$this->namingStrategy) {
-            throw new InvalidArgumentException(sprintf('%s: no naming strategy present', __METHOD__));
+        if ($this->namingStrategy) {
+            return $this->namingStrategy;
         }
 
-        return $this->namingStrategy;
+        throw new InvalidArgumentException(sprintf('%s: no naming strategy present', __METHOD__));
     }
 
     /**
@@ -54,7 +54,7 @@ trait NamingStrategyEnabledTrait
      */
     public function hasNamingStrategy()
     {
-        return $this->namingStrategy !== null;
+        return (bool) $this->namingStrategy;
     }
 
     /**

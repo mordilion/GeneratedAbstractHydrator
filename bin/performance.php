@@ -5,6 +5,7 @@ declare(strict_types=1);
 use Composer\Autoload\ClassLoader;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
 use Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator;
+use Zend\Hydrator\AbstractHydrator;
 use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
 
 /** @var ClassLoader $autloader */
@@ -37,15 +38,16 @@ class Example
 
 $object = new Example();
 $data = array('anno' => '2021-02-26', 'foo' => 1, 'bar' => 2, 'baz' => 3);
+
 $config = new GeneratedHydrator\Configuration('Example');
 $config->setHydratorGenerator(new AbstractHydratorGenerator(PerformantAbstractHydrator::class));
 $config->setGeneratedClassesTargetDir(__DIR__ . '/performance');
-$hydratorClass = $config->createFactory()->getHydratorClass();
+$performantHydratorClass = $config->createFactory()->getHydratorClass();
 
 $dateTimeStrategy = new DateTimeFormatterStrategy('Y-m-d');
 
 /** @var PerformantAbstractHydrator $generatedHydrator */
-$generatedHydrator = new $hydratorClass();
+$generatedHydrator = new $performantHydratorClass();
 $generatedHydrator->addStrategy('anno', $dateTimeStrategy);
 
 $classMethodsHydrator = new Zend\Hydrator\ClassMethods();
@@ -72,5 +74,5 @@ foreach ($hydrators as $generatedHydrator) {
         $generatedHydrator->extract($object);
     }
 
-    var_dump(microtime(true) - $start);
+    echo get_class($generatedHydrator) . ': ' . PHP_EOL . '    - ' . (microtime(true) - $start) . PHP_EOL . PHP_EOL;
 }
