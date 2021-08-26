@@ -13,6 +13,7 @@ namespace Mordilion\GeneratedAbstractHydrator\CodeGenerator\Visitor;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Identifier;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -161,7 +162,7 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
     {
         $method->params = [
             new Param(new Node\Expr\Variable('data'), null, 'array'),
-            new Param(new Node\Expr\Variable('object')),
+            new Param(new Node\Expr\Variable('object'), null, 'object'),
         ];
         $bodyParts = [];
 
@@ -188,7 +189,9 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
 
     private function replaceExtract(ClassMethod $method): void
     {
-        $method->params = [new Param(new Node\Expr\Variable('object'))];
+        $method->params = [new Param(new Node\Expr\Variable('object'), null, 'object')];
+        $method->returnType = new Identifier('array');
+
         $bodyParts = [];
         $bodyParts[] = '$data = [];';
 

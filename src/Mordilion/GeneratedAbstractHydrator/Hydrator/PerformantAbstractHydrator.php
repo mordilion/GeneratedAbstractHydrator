@@ -2,10 +2,8 @@
 
 /**
  * This file is part of the GeneratedAbstractHydrator package.
- *
  * For the full copyright and license information, please view the
  * LICENSE file that was distributed with this source code.
- *
  * @copyright (c) Henning Huncke - <mordilion@gmx.de>
  */
 
@@ -13,18 +11,24 @@ declare(strict_types=1);
 
 namespace Mordilion\GeneratedAbstractHydrator\Hydrator;
 
+use Laminas\Hydrator\Filter;
 use Laminas\Hydrator\HydratorInterface;
-use Laminas\Hydrator\NamingStrategyEnabledInterface;
-use Laminas\Hydrator\StrategyEnabledInterface;
+use Laminas\Hydrator\NamingStrategy;
+use Laminas\Hydrator\Strategy;
 use Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException;
 
 /**
  * @author Henning Huncke <mordilion@gmx.de>
  */
-abstract class PerformantAbstractHydrator implements HydratorInterface, StrategyEnabledInterface, NamingStrategyEnabledInterface
+abstract class PerformantAbstractHydrator implements
+    HydratorInterface,
+    Strategy\StrategyEnabledInterface,
+    NamingStrategy\NamingStrategyEnabledInterface,
+    Filter\FilterEnabledInterface
 {
     use StrategyEnabledTrait;
     use NamingStrategyEnabledTrait;
+    use FilterEnabledTrait;
 
     /**
      * @throws InvalidArgumentException
@@ -35,7 +39,7 @@ abstract class PerformantAbstractHydrator implements HydratorInterface, Strategy
             $name = $this->getNamingStrategy()->extract($name, $object);
         }
 
-        return (string) $name;
+        return $name;
     }
 
     /**
@@ -63,7 +67,7 @@ abstract class PerformantAbstractHydrator implements HydratorInterface, Strategy
             $name = $this->getNamingStrategy()->hydrate($name, $data);
         }
 
-        return (string) $name;
+        return $name;
     }
 
     /**

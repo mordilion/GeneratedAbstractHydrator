@@ -35,11 +35,9 @@ class RecursiveHydrationStrategy implements StrategyInterface
 
     /**
      * @param mixed $value
-     *
-     * @return mixed
      * @throws InvalidArgumentException
      */
-    public function extract($value)
+    public function extract($value, ?object $object = null)
     {
         if ($value === null) {
             return $this->isCollection ? [] : $value;
@@ -64,10 +62,8 @@ class RecursiveHydrationStrategy implements StrategyInterface
 
     /**
      * @param mixed $value
-     *
-     * @return mixed
      */
-    public function hydrate($value)
+    public function hydrate($value, ?array $data)
     {
         if (!$this->isCollection) {
             return $this->hydrateObject($value);

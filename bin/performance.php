@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 use Composer\Autoload\ClassLoader;
 use Laminas\Hydrator\AbstractHydrator;
+use Laminas\Hydrator\ClassMethodsHydrator;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
 use Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator;
 
@@ -48,13 +49,13 @@ $dateTimeStrategy = new \Laminas\Hydrator\Strategy\DateTimeFormatterStrategy('Y-
 $generatedHydrator = new $hydratorClass();
 $generatedHydrator->addStrategy('anno', $dateTimeStrategy);
 
-$classMethodsHydrator = new Laminas\Hydrator\ClassMethods();
+$classMethodsHydrator = new Laminas\Hydrator\ClassMethodsHydrator();
 $classMethodsHydrator->addStrategy('anno', $dateTimeStrategy);
 
-$reflectionHydrator = new Laminas\Hydrator\Reflection();
+$reflectionHydrator = new Laminas\Hydrator\ReflectionHydrator();
 $reflectionHydrator->addStrategy('anno', $dateTimeStrategy);
 
-$arraySerializableHydrator = new Laminas\Hydrator\ArraySerializable();
+$arraySerializableHydrator = new Laminas\Hydrator\ArraySerializableHydrator();
 $arraySerializableHydrator->addStrategy('anno', $dateTimeStrategy);
 
 $hydrators = array(

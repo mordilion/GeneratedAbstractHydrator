@@ -23,11 +23,9 @@ trait NamingStrategyEnabledTrait
 {
     private ?NamingStrategyInterface $namingStrategy = null;
 
-    public function setNamingStrategy(NamingStrategyInterface $strategy): self
+    public function setNamingStrategy(NamingStrategyInterface $strategy): void
     {
         $this->namingStrategy = $strategy;
-
-        return $this;
     }
 
     /**
@@ -47,10 +45,8 @@ trait NamingStrategyEnabledTrait
         return $this->namingStrategy !== null;
     }
 
-    public function removeNamingStrategy(): self
+    public function removeNamingStrategy(): void
     {
         $this->namingStrategy = null;
-
-        return $this;
     }
 }

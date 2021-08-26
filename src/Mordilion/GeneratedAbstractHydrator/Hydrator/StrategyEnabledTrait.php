@@ -26,20 +26,15 @@ trait StrategyEnabledTrait
      */
     private array $strategies = [];
 
-    /**
-     * @param string $name
-     */
-    public function addStrategy($name, StrategyInterface $strategy): self
+    public function addStrategy(string $name, StrategyInterface $strategy): void
     {
         $this->strategies[$name] = $strategy;
-
-        return $this;
     }
 
     /**
-     * @param string $name
+     * @throws InvalidArgumentException
      */
-    public function getStrategy($name): StrategyInterface
+    public function getStrategy(string $name): StrategyInterface
     {
         $strategy = $this->strategies[$name] ?? ($this->strategies['*'] ?? null);
 
@@ -54,21 +49,13 @@ trait StrategyEnabledTrait
         ));
     }
 
-    /**
-     * @param string $name
-     */
-    public function hasStrategy($name): bool
+    public function hasStrategy(string $name): bool
     {
         return isset($this->strategies[$name]) || isset($this->strategies['*']);
     }
 
-    /**
-     * @param string $name
-     */
-    public function removeStrategy($name): self
+    public function removeStrategy(string $name): void
     {
         unset($this->strategies[$name]);
-
-        return $this;
     }
 }
