@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 use Composer\Autoload\ClassLoader;
 use Laminas\Hydrator\AbstractHydrator;
-use Laminas\Hydrator\ClassMethodsHydrator;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
 use Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator;
 
@@ -22,6 +21,26 @@ class Example
     public $foo;
     public $bar;
     private $baz;
+    public $dummy10;
+    public $dummy11;
+    public $dummy12;
+    public $dummy13;
+    public $dummy14;
+    public $dummy15;
+    public $dummy16;
+    public $dummy17;
+    public $dummy18;
+    public $dummy19;
+    public $dummy20;
+    private $dummy21;
+    private $dummy22;
+    private $dummy23;
+    private $dummy24;
+    private $dummy25;
+    private $dummy26;
+    private $dummy27;
+    private $dummy28;
+    private $dummy29;
     public function setFoo($foo) { $this->foo = $foo; }
     public function setBar($bar) { $this->bar = $bar; }
     public function setBaz($baz) { $this->baz = $baz; }
@@ -29,10 +48,10 @@ class Example
     public function getBar() { return $this->bar; }
     public function getBaz() { return $this->baz; }
     public function exchangeArray($data) {
-        $this->foo = $data['foo']; $this->bar = $data['bar']; $this->baz = $data['baz'];
+        $this->foo = $data['foo']; $this->bar = $data['bar']; $this->baz = $data['baz']; $this->dummy10 = $data['dummy10']; $this->dummy11 = $data['dummy11']; $this->dummy12 = $data['dummy12']; $this->dummy13 = $data['dummy13']; $this->dummy14 = $data['dummy14']; $this->dummy15 = $data['dummy15']; $this->dummy16 = $data['dummy16']; $this->dummy17 = $data['dummy17']; $this->dummy18 = $data['dummy18']; $this->dummy19 = $data['dummy19']; $this->dummy20 = $data['dummy20']; $this->dummy21 = $data['dummy21']; $this->dummy22 = $data['dummy22']; $this->dummy23 = $data['dummy23']; $this->dummy24 = $data['dummy24']; $this->dummy25 = $data['dummy25']; $this->dummy26 = $data['dummy26']; $this->dummy27 = $data['dummy27']; $this->dummy28 = $data['dummy28']; $this->dummy29 = $data['dummy29'];
     }
     public function getArrayCopy() {
-        return array('foo' => $this->foo, 'bar' => $this->bar, 'baz' => $this->baz);
+        return array('foo' => $this->foo, 'bar' => $this->bar, 'baz' => $this->baz, 'dummy10' => $this->dummy10, 'dummy11' => $this->dummy11, 'dummy12' => $this->dummy12, 'dummy13' => $this->dummy13, 'dummy14' => $this->dummy14, 'dummy15' => $this->dummy15, 'dummy16' => $this->dummy16, 'dummy17' => $this->dummy17, 'dummy18' => $this->dummy18, 'dummy19' => $this->dummy19, 'dummy20' => $this->dummy20, 'dummy21' => $this->dummy21, 'dummy22' => $this->dummy22, 'dummy23' => $this->dummy23, 'dummy24' => $this->dummy24, 'dummy25' => $this->dummy25, 'dummy26' => $this->dummy26, 'dummy27' => $this->dummy27, 'dummy28' => $this->dummy28, 'dummy29' => $this->dummy29,);
     }
 }
 
