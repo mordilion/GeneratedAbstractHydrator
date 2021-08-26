@@ -17,7 +17,6 @@ use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
 
 class GeneratedAbstractHydratorTest extends TestCase
 {
-
     public function test_common()
     {
         $data = [
@@ -40,8 +39,8 @@ class GeneratedAbstractHydratorTest extends TestCase
         $object = new Author();
         $authorHydrator->hydrate($data, $object);
 
-        self::assertEquals($data['name'], $object->name);
-        self::assertEquals($data['first_name'], $object->firstName);
+        self::assertEquals($data['name'], $object->getName());
+        self::assertEquals($data['first_name'], $object->getFirstName());
 
         self::assertEquals($data['books'][0]['title'], $object->books[0]->title);
         self::assertInstanceOf(DateTime::class, $object->books[0]->publishedAt);

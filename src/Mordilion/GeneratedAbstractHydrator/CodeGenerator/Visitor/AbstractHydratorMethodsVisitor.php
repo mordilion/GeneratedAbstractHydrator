@@ -168,7 +168,7 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         }
 
         $count = count($this->hiddenPropertyMap);
-        for ($i = 1; $i < $count; $i++) {
+        for ($i = 0; $i < $count; $i++) {
             $bodyParts[] = '$this->hydrateCallbacks[' . $i . ']->__invoke($object, $data, $this);';
         }
 
@@ -191,10 +191,9 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
             $bodyParts[] = $this->getPropertyExtractString($property, 1);
         }
 
-        $index = 0;
-
-        foreach ($this->hiddenPropertyMap as $className => $properties) {
-            $bodyParts[] = '$this->extractCallbacks[' . ($index++) . ']->__invoke($object, $data, $this);';
+        $count = count($this->hiddenPropertyMap);
+        for ($i = 0; $i < $count; $i++) {
+            $bodyParts[] = '$this->extractCallbacks[' . $i . ']->__invoke($object, $data, $this);';
         }
 
         $bodyParts[] = 'return $data;';
