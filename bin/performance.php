@@ -65,13 +65,19 @@ $hydrators = array(
     $arraySerializableHydrator,
 );
 
-foreach ($hydrators as $generatedHydrator) {
-    $start = microtime(true);
+foreach ($hydrators as $hydrator) {
+    $times = [];
+    $totalStart = microtime(true);
 
     for ($i = 0; $i < $iterations; $i++) {
-        $generatedHydrator->hydrate($data, $object);
-        $generatedHydrator->extract($object);
+        $start = microtime(true);
+        $hydrator->hydrate($data, $object);
+        $hydrator->extract($object);
+        $times[] = microtime(true) - $start;
     }
 
-    var_dump(microtime(true) - $start);
+    $total = microtime(true) - $totalStart;
+    echo get_class($hydrator) . PHP_EOL
+        . '    Total (' . count($times) . '): ' . $total . PHP_EOL
+        . '    AVG: ' . (array_sum($times) / count($times)) . PHP_EOL . PHP_EOL;
 }
