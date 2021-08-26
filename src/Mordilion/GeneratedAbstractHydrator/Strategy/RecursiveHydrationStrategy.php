@@ -2,10 +2,8 @@
 
 /**
  * This file is part of the GeneratedAbstractHydrator package.
- *
  * For the full copyright and license information, please view the
  * LICENSE file that was distributed with this source code.
- *
  * @copyright (c) Henning Huncke - <mordilion@gmx.de>
  */
 
@@ -13,29 +11,20 @@ declare(strict_types=1);
 
 namespace Mordilion\GeneratedAbstractHydrator\Strategy;
 
+use Laminas\Hydrator\HydratorInterface;
+use Laminas\Hydrator\Strategy\StrategyInterface;
 use Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException;
-use Zend\Hydrator\HydratorInterface;
-use Zend\Hydrator\Strategy\StrategyInterface;
 
 /**
  * @author Henning Huncke <mordilion@gmx.de>
  */
 class RecursiveHydrationStrategy implements StrategyInterface
 {
-    /**
-     * @var bool
-     */
-    private $isCollection;
+    private HydratorInterface $hydrator;
 
-    /**
-     * @var HydratorInterface
-     */
-    private $hydrator;
+    private bool $isCollection;
 
-    /**
-     * @var object
-     */
-    private $object;
+    private object $object;
 
     public function __construct(object $object, HydratorInterface $hydrator, bool $isCollection = false)
     {
@@ -117,8 +106,6 @@ class RecursiveHydrationStrategy implements StrategyInterface
 
     /**
      * @param mixed $value
-     *
-     * @throws InvalidArgumentException
      */
     private function hydrateObject($value): ?object
     {

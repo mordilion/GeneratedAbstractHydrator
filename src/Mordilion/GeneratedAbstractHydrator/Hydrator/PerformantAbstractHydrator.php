@@ -13,9 +13,10 @@ declare(strict_types=1);
 
 namespace Mordilion\GeneratedAbstractHydrator\Hydrator;
 
-use Zend\Hydrator\HydratorInterface;
-use Zend\Hydrator\NamingStrategyEnabledInterface;
-use Zend\Hydrator\StrategyEnabledInterface;
+use Laminas\Hydrator\HydratorInterface;
+use Laminas\Hydrator\NamingStrategyEnabledInterface;
+use Laminas\Hydrator\StrategyEnabledInterface;
+use Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException;
 
 /**
  * @author Henning Huncke <mordilion@gmx.de>
@@ -26,7 +27,7 @@ abstract class PerformantAbstractHydrator implements HydratorInterface, Strategy
     use NamingStrategyEnabledTrait;
 
     /**
-     * @throws \Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function extractName(string $name, ?object $object = null): string
     {
@@ -41,7 +42,7 @@ abstract class PerformantAbstractHydrator implements HydratorInterface, Strategy
      * @param mixed $value
      *
      * @return mixed
-     * @throws \Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function extractValue(string $name, $value, ?object $object = null)
     {
@@ -54,7 +55,7 @@ abstract class PerformantAbstractHydrator implements HydratorInterface, Strategy
     }
 
     /**
-     * @throws \Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function hydrateName(string $name, ?array $data = null): string
     {
@@ -69,7 +70,7 @@ abstract class PerformantAbstractHydrator implements HydratorInterface, Strategy
      * @param mixed $value
      *
      * @return mixed
-     * @throws \Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function hydrateValue(string $name, $value, ?array $data = null)
     {

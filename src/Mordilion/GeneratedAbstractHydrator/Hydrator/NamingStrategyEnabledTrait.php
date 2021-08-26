@@ -14,22 +14,16 @@ declare(strict_types=1);
 namespace Mordilion\GeneratedAbstractHydrator\Hydrator;
 
 use Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException;
-use Zend\Hydrator\NamingStrategy\NamingStrategyInterface;
+use Laminas\Hydrator\NamingStrategy\NamingStrategyInterface;
 
 /**
  * @author Henning Huncke <mordilion@gmx.de>
  */
 trait NamingStrategyEnabledTrait
 {
-    /**
-     * @var NamingStrategyInterface|null
-     */
-    private $namingStrategy;
+    private ?NamingStrategyInterface $namingStrategy = null;
 
-    /**
-     * @return self
-     */
-    public function setNamingStrategy(NamingStrategyInterface $strategy)
+    public function setNamingStrategy(NamingStrategyInterface $strategy): self
     {
         $this->namingStrategy = $strategy;
 
@@ -37,10 +31,9 @@ trait NamingStrategyEnabledTrait
     }
 
     /**
-     * @return NamingStrategyInterface
      * @throws InvalidArgumentException
      */
-    public function getNamingStrategy()
+    public function getNamingStrategy(): NamingStrategyInterface
     {
         if (!$this->namingStrategy) {
             throw new InvalidArgumentException(sprintf('%s: no naming strategy present', __METHOD__));
@@ -49,18 +42,12 @@ trait NamingStrategyEnabledTrait
         return $this->namingStrategy;
     }
 
-    /**
-     * @return bool
-     */
-    public function hasNamingStrategy()
+    public function hasNamingStrategy(): bool
     {
         return $this->namingStrategy !== null;
     }
 
-    /**
-     * @return self
-     */
-    public function removeNamingStrategy()
+    public function removeNamingStrategy(): self
     {
         $this->namingStrategy = null;
 

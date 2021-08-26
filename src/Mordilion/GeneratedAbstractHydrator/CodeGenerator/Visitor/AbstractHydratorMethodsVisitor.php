@@ -31,28 +31,32 @@ use function var_export;
  */
 class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
 {
-    /**
-     * @var ReflectionProperty[][]
-     */
-    private $hiddenPropertyMap = [];
+    private bool $parentHasConstructor;
 
     /**
-     * @var ReflectionProperty[]
+     * @var ObjectProperty[][]
      */
-    private $visiblePropertyMap = [];
+    private array $hiddenPropertyMap = [];
 
-    public function __construct(ReflectionClass $reflectedClass)
+    /**
+     * @var ObjectProperty[]
+     */
+    private array $visiblePropertyMap = [];
+
+    public function __construct(ReflectionClass $reflectedClass, string $abstractClass)
     {
+        $this->parentHasConstructor = method_exists($abstractClass, '__construct');
+
         foreach ($this->findAllInstanceProperties($reflectedClass) as $property) {
             $className = $property->getDeclaringClass()->getName();
 
             if ($property->isPrivate() || $property->isProtected()) {
-                $this->hiddenPropertyMap[$className][] = $property;
+                $this->hiddenPropertyMap[$className][] = ObjectProperty::fromReflectionProperty($property);
 
                 continue;
             }
 
-            $this->visiblePropertyMap[] = $property;
+            $this->visiblePropertyMap[] = ObjectProperty::fromReflectionProperty($property);
         }
     }
 
@@ -97,33 +101,33 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
     }
 
     /**
-     * @param string[]             $parts
-     * @param ReflectionProperty[] $properties
+     * @param string[]         $parts
+     * @param ObjectProperty[] $properties
      */
     private function appendHydrateClosureParts(array &$parts, array $properties): void
     {
         foreach ($properties as $property) {
-            $propertyName = $property->getName();
+            $propertyName = $property->name;
 
             $parts[] = "    \$name = \$this->extractName('" . $propertyName . "', \$object);";
             $parts[] = "    if (isset(\$data[\$name]) || " .
                 '$object->' . $propertyName . " !== null && \\array_key_exists(\$name, \$data)) {";
-            $parts[] = $this->getPropertyHydrateString($property, 2, true);
+            $parts[] = $this->getPropertyHydrateString($propertyName, 2, true);
             $parts[] = '    }';
         }
     }
 
     /**
-     * @param string[]             $parts
-     * @param ReflectionProperty[] $properties
+     * @param string[]         $parts
+     * @param ObjectProperty[] $properties
      */
     private function appendExtractClosureParts(array &$parts, array $properties): void
     {
         foreach ($properties as $property) {
-            $propertyName = $property->getName();
+            $propertyName = $property->name;
 
             $parts[] = "    \$name = \$this->hydrateName('" . $propertyName . "', \$data);";
-            $parts[] = $this->getPropertyExtractString($property, 1, true);
+            $parts[] = $this->getPropertyExtractString($propertyName, 1, true);
         }
     }
 
@@ -131,6 +135,10 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
     {
         $method->params = [];
         $bodyParts = [];
+
+        if ($this->parentHasConstructor) {
+            $bodyParts[] = 'parent::__construct();';
+        }
 
         foreach ($this->hiddenPropertyMap as $className => $properties) {
             // Hydrate closures
@@ -158,12 +166,12 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         $bodyParts = [];
 
         foreach ($this->visiblePropertyMap as $property) {
-            $propertyName = $property->getName();
+            $propertyName = $property->name;
 
             $bodyParts[] = "\$name = \$this->extractName('" . $propertyName . "', \$object);";
             $bodyParts[] = "if (isset(\$data[\$name]) || " .
                 '$object->' . $propertyName . " !== null && \\array_key_exists(\$name, \$data)) {";
-            $bodyParts[] = $this->getPropertyHydrateString($property, 1);
+            $bodyParts[] = $this->getPropertyHydrateString($propertyName, 1);
             $bodyParts[] = '}';
         }
 
@@ -185,10 +193,10 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         $bodyParts[] = '$data = [];';
 
         foreach ($this->visiblePropertyMap as $property) {
-            $propertyName = $property->getName();
+            $propertyName = $property->name;
 
             $bodyParts[] = "\$name = \$this->hydrateName('" . $propertyName . "', \$data);";
-            $bodyParts[] = $this->getPropertyExtractString($property, 1);
+            $bodyParts[] = $this->getPropertyExtractString($propertyName, 1);
         }
 
         $index = 0;
@@ -225,10 +233,8 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         return $method;
     }
 
-    private function getPropertyHydrateString(ReflectionProperty $property, int $indent, bool $isThat = false)
+    private function getPropertyHydrateString(string $propertyName, int $indent, bool $isThat = false): string
     {
-        $propertyName = $property->getName();
-
         $result = str_repeat('    ', $indent);
         $result .= '$object->' . $propertyName . " = ";
         $result .= ($isThat ? '$that' : '$this') . "->hydrateValue('" . $propertyName . "', \$data[\$name], \$data)";
@@ -237,10 +243,8 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         return $result;
     }
 
-    private function getPropertyExtractString(ReflectionProperty $property, int $indent, bool $isThat = false): string
+    private function getPropertyExtractString(string $propertyName, int $indent, bool $isThat = false): string
     {
-        $propertyName = $property->getName();
-
         $result = str_repeat('    ', $indent);
         $result .= "\$data[\$name] = ";
         $result .= ($isThat ? '$that' : '$this') . "->extractValue('" . $propertyName . "', \$object->" . $propertyName . ", \$object)";

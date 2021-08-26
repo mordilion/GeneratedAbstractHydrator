@@ -14,7 +14,7 @@ declare(strict_types=1);
 namespace Mordilion\GeneratedAbstractHydrator\Hydrator;
 
 use Mordilion\GeneratedAbstractHydrator\Exception\InvalidArgumentException;
-use Zend\Hydrator\Strategy\StrategyInterface;
+use Laminas\Hydrator\Strategy\StrategyInterface;
 
 /**
  * @author Henning Huncke <mordilion@gmx.de>
@@ -24,14 +24,16 @@ trait StrategyEnabledTrait
     /**
      * @var StrategyInterface[]
      */
-    private $strategies = [];
+    private array $strategies = [];
 
     /**
      * @param string $name
      */
-    public function addStrategy($name, StrategyInterface $strategy): void
+    public function addStrategy($name, StrategyInterface $strategy): self
     {
         $this->strategies[$name] = $strategy;
+
+        return $this;
     }
 
     /**
@@ -63,8 +65,10 @@ trait StrategyEnabledTrait
     /**
      * @param string $name
      */
-    public function removeStrategy($name): void
+    public function removeStrategy($name): self
     {
         unset($this->strategies[$name]);
+
+        return $this;
     }
 }

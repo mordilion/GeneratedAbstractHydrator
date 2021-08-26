@@ -12,12 +12,11 @@ use Mordilion\GeneratedAbstractHydrator\Strategy\RecursiveHydrationStrategy;
 use Mordilion\GeneratedAbstractHydrator\Tests\ExampleClasses\Author;
 use Mordilion\GeneratedAbstractHydrator\Tests\ExampleClasses\Book;
 use PHPUnit\Framework\TestCase;
-use Zend\Hydrator\NamingStrategy\UnderscoreNamingStrategy;
-use Zend\Hydrator\Strategy\DateTimeFormatterStrategy;
+use Laminas\Hydrator\NamingStrategy\UnderscoreNamingStrategy;
+use Laminas\Hydrator\Strategy\DateTimeFormatterStrategy;
 
 class GeneratedAbstractHydratorTest extends TestCase
 {
-
     public function test_common()
     {
         $data = [
