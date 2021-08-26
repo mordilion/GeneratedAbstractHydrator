@@ -110,7 +110,7 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         foreach ($properties as $property) {
             $propertyName = $property->name;
 
-            $parts[] = "    \$name = \$this->extractName('" . $propertyName . "', \$object);";
+            $parts[] = "    \$name = \$that->extractName('" . $propertyName . "', \$object);";
             $parts[] = "    if (isset(\$data[\$name]) || " .
                 '$object->' . $propertyName . " !== null && \\array_key_exists(\$name, \$data)) {";
             $parts[] = $this->getPropertyHydrateString($propertyName, 2, true);
@@ -127,7 +127,7 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         foreach ($properties as $property) {
             $propertyName = $property->name;
 
-            $parts[] = "    \$name = \$this->hydrateName('" . $propertyName . "', \$data);";
+            $parts[] = "    \$name = \$that->hydrateName('" . $propertyName . "', \$data);";
             $parts[] = $this->getPropertyExtractString($propertyName, 1, true);
         }
     }
