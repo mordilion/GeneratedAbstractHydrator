@@ -21,7 +21,7 @@ class Example
     public $anno;
     public $foo;
     public $bar;
-    public $baz;
+    private $baz;
     public function setFoo($foo) { $this->foo = $foo; }
     public function setBar($bar) { $this->bar = $bar; }
     public function setBaz($baz) { $this->baz = $baz; }
@@ -38,12 +38,23 @@ class Example
 
 $object = new Example();
 $data = array('anno' => '2021-02-26', 'foo' => 1, 'bar' => 2, 'baz' => 3);
+$dateTimeStrategy = new \Laminas\Hydrator\Strategy\DateTimeFormatterStrategy('Y-m-d');
+
 $config = new GeneratedHydrator\Configuration('Example');
 $config->setHydratorGenerator(new AbstractHydratorGenerator(PerformantAbstractHydrator::class));
 $config->setGeneratedClassesTargetDir(__DIR__ . '/performance');
+$config->setGeneratedClassesNamespace('PerformantAbstractHydrator');
 $hydratorClass = $config->createFactory()->getHydratorClass();
 
-$dateTimeStrategy = new \Laminas\Hydrator\Strategy\DateTimeFormatterStrategy('Y-m-d');
+/** @var PerformantAbstractHydrator $performantGeneratedHydrator */
+$performantGeneratedHydrator = new $hydratorClass();
+$performantGeneratedHydrator->addStrategy('anno', $dateTimeStrategy);
+
+$config = new GeneratedHydrator\Configuration('Example');
+$config->setHydratorGenerator(new AbstractHydratorGenerator(AbstractHydrator::class));
+$config->setGeneratedClassesTargetDir(__DIR__ . '/performance');
+$config->setGeneratedClassesNamespace('AbstractHydrator');
+$hydratorClass = $config->createFactory()->getHydratorClass();
 
 /** @var PerformantAbstractHydrator $generatedHydrator */
 $generatedHydrator = new $hydratorClass();
@@ -59,6 +70,7 @@ $arraySerializableHydrator = new Laminas\Hydrator\ArraySerializableHydrator();
 $arraySerializableHydrator->addStrategy('anno', $dateTimeStrategy);
 
 $hydrators = array(
+    $performantGeneratedHydrator,
     $generatedHydrator,
     $classMethodsHydrator,
     $reflectionHydrator,
