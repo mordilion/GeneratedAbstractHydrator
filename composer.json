@@ -20,7 +20,8 @@
         "php": "^7.4.0",
         "laminas/laminas-filter": "^2.11.0",
         "laminas/laminas-servicemanager": "^3.7.0",
-        "ocramius/generated-hydrator": "^4.2.0"
+        "ocramius/generated-hydrator": "^4.2.0",
+        "doctrine/annotations": "^1.13"
     },
     "require-dev": {
         "vimeo/psalm": "^4.6",

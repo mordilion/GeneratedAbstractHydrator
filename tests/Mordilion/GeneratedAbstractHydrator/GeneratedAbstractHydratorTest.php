@@ -17,7 +17,7 @@ use Laminas\Hydrator\Strategy\DateTimeFormatterStrategy;
 
 class GeneratedAbstractHydratorTest extends TestCase
 {
-    public function test_common()
+    public function test_common(): void
     {
         $data = [
             'name' => 'Böll',
@@ -53,6 +53,11 @@ class GeneratedAbstractHydratorTest extends TestCase
         self::assertEquals($data['books'][2]['title'], $object->books[2]->title);
         self::assertInstanceOf(DateTime::class, $object->books[2]->publishedAt);
         self::assertEquals($data['books'][2]['publishedAt'], $object->books[2]->publishedAt->format('Y-m-d'));
+    }
+
+    public function testAnnotationStrategy(): void
+    {
+
     }
 
     private function getClassHydrator(string $class): PerformantAbstractHydrator
