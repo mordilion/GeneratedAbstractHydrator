@@ -33,10 +33,13 @@ class AbstractHydratorGenerator implements HydratorGenerator
     /**
      * @var class-string
      */
-    private $abstractClass;
+    private string $abstractClass;
 
     /**
      * @param class-string $abstractClass
+     *
+     * @throws InvalidArgumentException
+     * @throws \ReflectionException
      */
     public function __construct(string $abstractClass)
     {

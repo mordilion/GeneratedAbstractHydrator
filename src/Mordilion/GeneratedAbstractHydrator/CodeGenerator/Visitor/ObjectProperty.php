@@ -2,8 +2,10 @@
 
 /**
  * This file is part of the GeneratedAbstractHydrator package.
+ *
  * For the full copyright and license information, please view the
  * LICENSE file that was distributed with this source code.
+ *
  * @copyright (c) Henning Huncke - <mordilion@gmx.de>
  */
 
@@ -44,7 +46,7 @@ final class ObjectProperty
         $this->hasDefault = $hasDefault;
     }
 
-    public static function fromReflectionProperty(ReflectionProperty $property): self
+    public static function fromReflection(ReflectionProperty $property): self
     {
         /** @psalm-var non-empty-string $propertyName */
         $propertyName = $property->getName();
