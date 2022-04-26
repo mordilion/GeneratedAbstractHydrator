@@ -17,7 +17,7 @@
         }
     },
     "require": {
-        "php": "^7.4.0",
+        "php": "~8.0.0 || ~8.1.0",
         "laminas/laminas-filter": "^2.11.0",
         "laminas/laminas-servicemanager": "^3.7.0",
         "ocramius/generated-hydrator": "^4.2.0"
