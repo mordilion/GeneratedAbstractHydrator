@@ -63,6 +63,11 @@ class GeneratedAbstractHydratorTest extends TestCase
         self::assertEquals($data['books'][2]['published_at'], $object->books[2]->publishedAt->format('Y-m-d'));
     }
 
+    public function testAnnotationStrategy(): void
+    {
+
+    }
+
     private function getClassHydrator(string $class): PerformantAbstractHydrator
     {
         $config = new Configuration($class);

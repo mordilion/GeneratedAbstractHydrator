@@ -2,13 +2,18 @@
 
 declare(strict_types=1);
 
+namespace Mordilion\GeneratedAbstractHydrator\Performance;
+
 use Composer\Autoload\ClassLoader;
+use DateTime;
+use GeneratedHydrator\Configuration;
 use Laminas\Hydrator\AbstractHydrator;
 use Mordilion\GeneratedAbstractHydrator\ClassGenerator\AbstractHydratorGenerator;
+use Mordilion\GeneratedAbstractHydrator\CodeGenerator\Annotations as GAH;
 use Mordilion\GeneratedAbstractHydrator\Hydrator\PerformantAbstractHydrator;
 
-/** @var ClassLoader $autloader */
-$autloader = require __DIR__ . '/../vendor/autoload.php';
+/** @var ClassLoader $autoloader */
+$autoloader = require __DIR__ . '/../vendor/autoload.php';
 
 $iterations = 10000;
 
@@ -16,6 +21,7 @@ class Example
 {
     /**
      * @var DateTime
+     * @GAH\Strategy(class="\Laminas\Hydrator\Strategy\DateTimeFormatterStrategy", parameters={"'Y-m-d'", "new \DateTimeZone('Europe/Berlin')"})
      */
     public $anno;
     public $foo;
@@ -59,7 +65,7 @@ $object = new Example();
 $data = array('anno' => '2021-02-26', 'foo' => 1, 'bar' => 2, 'baz' => 3);
 $dateTimeStrategy = new \Laminas\Hydrator\Strategy\DateTimeFormatterStrategy('Y-m-d');
 
-$config = new GeneratedHydrator\Configuration('Example');
+$config = new Configuration(Example::class);
 $config->setHydratorGenerator(new AbstractHydratorGenerator(PerformantAbstractHydrator::class));
 $config->setGeneratedClassesTargetDir(__DIR__ . '/performance');
 $config->setGeneratedClassesNamespace('PerformantAbstractHydrator');
@@ -69,7 +75,7 @@ $hydratorClass = $config->createFactory()->getHydratorClass();
 $performantGeneratedHydrator = new $hydratorClass();
 $performantGeneratedHydrator->addStrategy('anno', $dateTimeStrategy);
 
-$config = new GeneratedHydrator\Configuration('Example');
+$config = new Configuration(Example::class);
 $config->setHydratorGenerator(new AbstractHydratorGenerator(AbstractHydrator::class));
 $config->setGeneratedClassesTargetDir(__DIR__ . '/performance');
 $config->setGeneratedClassesNamespace('AbstractHydrator');
@@ -79,13 +85,13 @@ $hydratorClass = $config->createFactory()->getHydratorClass();
 $generatedHydrator = new $hydratorClass();
 $generatedHydrator->addStrategy('anno', $dateTimeStrategy);
 
-$classMethodsHydrator = new Laminas\Hydrator\ClassMethodsHydrator();
+$classMethodsHydrator = new \Laminas\Hydrator\ClassMethodsHydrator();
 $classMethodsHydrator->addStrategy('anno', $dateTimeStrategy);
 
-$reflectionHydrator = new Laminas\Hydrator\ReflectionHydrator();
+$reflectionHydrator = new \Laminas\Hydrator\ReflectionHydrator();
 $reflectionHydrator->addStrategy('anno', $dateTimeStrategy);
 
-$arraySerializableHydrator = new Laminas\Hydrator\ArraySerializableHydrator();
+$arraySerializableHydrator = new \Laminas\Hydrator\ArraySerializableHydrator();
 $arraySerializableHydrator->addStrategy('anno', $dateTimeStrategy);
 
 $hydrators = array(

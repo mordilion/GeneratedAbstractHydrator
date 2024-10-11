@@ -34,12 +34,16 @@ use function var_export;
  */
 class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
 {
+    use AnnotationsTrait;
+
     private bool $parentHasConstructor;
 
     /**
      * @var ObjectProperty[][]
      */
     private array $hiddenPropertyMap = [];
+
+    private ReflectionClass $reflectedClass;
 
     /**
      * @var ObjectProperty[]
@@ -52,9 +56,10 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
      */
     public function __construct(ReflectionClass $reflectedClass, string $abstractClass)
     {
+        $this->reflectedClass = $reflectedClass;
         $this->parentHasConstructor = method_exists($abstractClass, '__construct');
 
-        foreach ($this->findAllInstanceProperties($reflectedClass) as $property) {
+        foreach ($this->findAllInstanceProperties($this->reflectedClass) as $property) {
             $className = $property->getDeclaringClass()->getName();
 
             if ($property->isPrivate() || $property->isProtected()) {
@@ -146,6 +151,8 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
         if ($this->parentHasConstructor) {
             $bodyParts[] = 'parent::__construct();';
         }
+
+        $bodyParts[] = $this->generateCode($this->reflectedClass->getName());
 
         foreach ($this->hiddenPropertyMap as $className => $properties) {
             // Hydrate closures
