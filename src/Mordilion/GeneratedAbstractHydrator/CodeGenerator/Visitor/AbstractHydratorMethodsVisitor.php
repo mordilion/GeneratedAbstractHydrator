@@ -2,8 +2,10 @@
 
 /**
  * This file is part of the GeneratedAbstractHydrator package.
+ *
  * For the full copyright and license information, please view the
  * LICENSE file that was distributed with this source code.
+ *
  * @copyright (c) Henning Huncke - <mordilion@gmx.de>
  */
 
@@ -48,6 +50,10 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
      */
     private array $visiblePropertyMap = [];
 
+    /**
+     * @param ReflectionClass $reflectedClass
+     * @param class-string    $abstractClass
+     */
     public function __construct(ReflectionClass $reflectedClass, string $abstractClass)
     {
         $this->reflectedClass = $reflectedClass;
@@ -57,12 +63,12 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
             $className = $property->getDeclaringClass()->getName();
 
             if ($property->isPrivate() || $property->isProtected()) {
-                $this->hiddenPropertyMap[$className][] = ObjectProperty::fromReflectionProperty($property);
+                $this->hiddenPropertyMap[$className][] = ObjectProperty::fromReflection($property);
 
                 continue;
             }
 
-            $this->visiblePropertyMap[] = ObjectProperty::fromReflectionProperty($property);
+            $this->visiblePropertyMap[] = ObjectProperty::fromReflection($property);
         }
     }
 
@@ -95,15 +101,15 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
             return [];
         }
 
-        return array_values(array_merge(
+        return array_merge(
             $this->findAllInstanceProperties($class->getParentClass() ?: null),
-            array_values(array_filter(
+            array_filter(
                 $class->getProperties(),
                 static function (ReflectionProperty $property): bool {
                     return !$property->isStatic();
                 }
-            ))
-        ));
+            )
+        );
     }
 
     /**
@@ -220,6 +226,9 @@ class AbstractHydratorMethodsVisitor extends NodeVisitorAbstract
             ->parse('<?php ' . implode("\n", $bodyParts));
     }
 
+    /**
+     * Finds or creates a class method (and eventually attaches it to the class itself)
+     */
     private function findOrCreateMethod(Class_ $class, string $name): ClassMethod
     {
         $foundMethods = array_filter(

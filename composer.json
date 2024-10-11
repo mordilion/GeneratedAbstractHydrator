@@ -17,11 +17,10 @@
         }
     },
     "require": {
-        "php": "^7.4.0",
-        "laminas/laminas-filter": "^2.11.0",
-        "laminas/laminas-servicemanager": "^3.7.0",
-        "ocramius/generated-hydrator": "^4.2.0",
-        "doctrine/annotations": "^1.13"
+        "php": "~8.1.0 || ~8.2.0 || ~8.3.0",
+        "laminas/laminas-filter": "^2.11",
+        "laminas/laminas-servicemanager": "^3.7",
+        "ocramius/generated-hydrator": "~4.6.0"
     },
     "require-dev": {
         "vimeo/psalm": "^4.6",
